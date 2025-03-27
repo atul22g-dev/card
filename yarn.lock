@@ -7528,6 +7528,11 @@ follow-redirects@^1.0.0:
   resolved "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.15.5.tgz"
   integrity sha512-vSFWUON1B+yAw1VN4xMfxgn5fTUiaOzAJCKBwIIgT/+7CuGy9+r+5gITvP62j3RmaD5Ph65UaERdOSRGUzZtgw==
 
+fontawesome6pro@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/fontawesome6pro/-/fontawesome6pro-1.0.1.tgz"
+  integrity sha512-JTZ0NtbXJqyEg3V1yCfprkrz9TePIW4dzccaFRYo+95mLq+LUbc/XBll3KmhK1rTixw6lmJLqi+4IpLSSWZUsQ==
+
 for-each@^0.3.3:
   version "0.3.3"
   resolved "https://registry.npmjs.org/for-each/-/for-each-0.3.3.tgz"

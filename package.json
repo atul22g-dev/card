@@ -9,6 +9,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "appwrite": "^13.0.1",
+    "fontawesome6pro": "^1.0.1",
     "netlify-cli": "^17.35.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

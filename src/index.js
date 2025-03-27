@@ -10,6 +10,7 @@ import reportWebVitals from './reportWebVitals';
 import { Provider } from 'react-redux';
 import store from './data/index';
 import { ThemeProvider } from "@material-tailwind/react";
+import 'fontawesome6pro/css/all.min.css'
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
