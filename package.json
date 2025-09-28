@@ -10,7 +10,6 @@
     "@testing-library/user-event": "^13.5.0",
     "appwrite": "^13.0.1",
     "fontawesome6pro": "^1.0.1",
-    "netlify-cli": "^17.35.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.50.1",
@@ -43,5 +42,12 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@babel/plugin-syntax-flow": "^7.27.1",
+    "@babel/plugin-transform-react-jsx": "^7.27.1",
+    "@testing-library/dom": "^10.4.1",
+    "@types/node": "^24.5.2",
+    "typescript": "^5.9.2"
   }
 }
