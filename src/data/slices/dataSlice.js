@@ -19,9 +19,8 @@ const dataSlice = createSlice({
             let jsonSingleData = {};
             try {
                 const parsed = singleData ? JSON.parse(singleData) : {};
-                // Remove internal __themeColor key before setting card data
-                const { __themeColor, ...cleanData } = parsed;
-                jsonSingleData = cleanData;
+                // Keep __themeColor in cardData so preview components can read it from Redux
+                jsonSingleData = parsed;
             } catch (e) {
                 console.error('Failed to parse saved card data:', e);
                 jsonSingleData = {};

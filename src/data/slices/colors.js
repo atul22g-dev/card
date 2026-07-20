@@ -34,7 +34,17 @@ const colorSlice = createSlice({
     reducers: {
         setCurrentColor(state, action) {
             state.color = action.payload;
-            state.name = action.payload;
+        },
+        /**
+         * Apply a saved theme color from stored card data.
+         * Updates both the Redux state and the document CSS variables.
+         */
+        restoreThemeColor(state, action) {
+            const themeColor = action.payload;
+            state.color = themeColor;
+            document.documentElement.style.setProperty('--theme-color', `rgb(${themeColor})`);
+            document.documentElement.style.setProperty('--light-theme-color', `rgba(${themeColor}, .25)`);
+            document.documentElement.style.setProperty('--theme-color-rgb', themeColor);
         },
     },
     extraReducers: builder => {
@@ -55,5 +65,5 @@ const colorSlice = createSlice({
     },
 });
 
-export const { setCurrentColor } = colorSlice.actions;
+export const { setCurrentColor, restoreThemeColor } = colorSlice.actions;
 export default colorSlice.reducer;

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { connect, useDispatch, useSelector } from 'react-redux';
 import { fetchDetails } from '../../data/slices/detailSlice';
 import { openModal, setCardData } from '../../data/slices/dataSlice';
+import { restoreThemeColor } from '../../data/slices/colors';
 import { isEmpty } from '../func/AllFunc';
 import { dbService } from "../../appwrite/auth";
 import { useLocation } from 'react-router-dom';
@@ -36,13 +37,11 @@ const Details = ({ details, fetchDetails, loader, openModal, data, user }) => {
                     if (result && result[0]) {
                         dispatch(storeSingleData(result));
                         dispatch(setCardData(result));
-                        // Restore the saved theme color
+                        // Restore the saved theme color via Redux action (sets CSS + state)
                         try {
                             const savedData = JSON.parse(result[0].Data);
                             if (savedData.__themeColor) {
-                                document.documentElement.style.setProperty('--theme-color', `rgb(${savedData.__themeColor})`);
-                                document.documentElement.style.setProperty('--light-theme-color', `rgba(${savedData.__themeColor}, .25)`);
-                                document.documentElement.style.setProperty('--theme-color-rgb', savedData.__themeColor);
+                                dispatch(restoreThemeColor(savedData.__themeColor));
                             }
                         } catch (e) {
                             // Data parsing failed, ignore

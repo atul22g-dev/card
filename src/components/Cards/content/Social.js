@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { connect, useDispatch } from 'react-redux';
 import { openModal } from '../../../data/slices/dataSlice';
 import { findCardInon } from '../../func/AllFunc';
+import brandColors, { platformLabels } from '../../../constants/brandColors';
 
 const Social = ({ data, isOpen, details, color, saveData, isSocial }) => {
     const dispatch = useDispatch();
@@ -10,40 +11,60 @@ const Social = ({ data, isOpen, details, color, saveData, isSocial }) => {
         let ficon = findCardInon(details, isOpen)
         setIcon(ficon)
     }, [details, isOpen])
+
+    const socialEntries = Object.entries(data).filter(([key, val]) => val?.icon !== undefined);
+
     return (
-        <>
-            {Object.keys(data).map((key) => (
-                key !== isOpen ? (
-                    data[key]?.icon !== undefined ? (
-                        <div key={key} onClick={() => dispatch(openModal({ openModal: 'social', name: key }))} className='flex themeOutLine outline-offset-[1px] outline card-data card-data_social gap-2 min-h-[38px] w-full'>
-                            {/* Icon */}
-                            <div className={`bg-[rgb(${color})] icon_con flex justify-center items-center Social`}>
-                                <i className={`${data[key].icon} text-white`}></i>
-                            </div>
-                            {/* Text */}
-                            <div className='w-full flex card-data_text_con flex-col justify-center items-start p-1'>
-                                <span>{data[key]?.value}</span>
-                                <span>{data[key]?.label}</span>
-                            </div>
-                        </div>) : null
-                ) : null
-            ))
-            }
-            {
-                isSocial && data[isOpen] !== '{}' && isOpen ?
-                    <div className={`flex card-data themeOutLine card-data_social outline-offset-[1px] outline gap-2 min-h-[38px] w-full ${isOpen !== undefined ? 'card-data_active' : ''}`}>
-                        {/* Icon */}
-                        <div className={`bg-[rgb(${color})] icon_con flex justify-center items-center Social`}>
-                            <i className={`${icon} text-white`}></i>
+        <div className="card-social-section-modern">
+            {socialEntries.map(([key, val]) => {
+                if (key === isOpen) return null;
+                const brandColor = brandColors[key] || null;
+                const platformName = platformLabels[key] || key.charAt(0).toUpperCase() + key.slice(1);
+
+                return (
+                    <div key={key} 
+                         onClick={() => dispatch(openModal({ openModal: 'social', name: key }))} 
+                         className="card-social-item-modern"
+                         style={brandColor ? { '--social-brand': brandColor } : { '--social-brand': `rgb(${color})` }}
+                    >
+                        <div className="card-social-item-bg"></div>
+                        <div
+                            className="card-social-item-icon-wrap"
+                            style={brandColor ? { backgroundColor: brandColor } : { backgroundColor: `rgb(${color})` }}
+                        >
+                            <i className={`${val.icon} text-white`}></i>
                         </div>
-                        {/* Text */}
-                        <div className='w-full flex card-data_text_con flex-col justify-center items-start p-1'>
-                            <span>{data[isOpen]?.value}</span>
-                            <span>{data[isOpen]?.label}</span>
+                        <div className="card-social-item-content">
+                            <span className="card-social-item-platform">{platformName}</span>
+                            <span className="card-social-item-value">{val?.value}</span>
                         </div>
-                    </div> : null
-            }
-        </>
+                        <div className="card-social-item-arrow">
+                            <i className="fa-regular fa-pen"></i>
+                        </div>
+                    </div>
+                );
+            })}
+
+            {/* Active editing field */}
+            {isSocial && data[isOpen] && isOpen && (
+                <div 
+                    className={`card-social-item-modern active ${isOpen !== undefined ? 'card-text-style_active' : ''}`}
+                    style={{ '--social-brand': `rgb(${color})` }}
+                >
+                    <div className="card-social-item-bg"></div>
+                    <div
+                        className="card-social-item-icon-wrap"
+                        style={{ backgroundColor: `rgb(${color})` }}
+                    >
+                        <i className={`${icon} text-white`}></i>
+                    </div>
+                    <div className="card-social-item-content">
+                        <span className="card-social-item-platform">{platformLabels[isOpen] || isOpen}</span>
+                        <span className="card-social-item-value">{data[isOpen]?.value}</span>
+                    </div>
+                </div>
+            )}
+        </div>
     )
 }
 
