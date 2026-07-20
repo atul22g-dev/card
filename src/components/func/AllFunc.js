@@ -12,9 +12,11 @@ export const findCardInon = (details, isOpen) => {
 
 // Find Object is empty or not 
 export const isEmpty = (obj) => {
+    if (!obj) return true;
+    if (Object.keys(obj).length === 0) return true;
     for (let key in obj) {
-        if (obj.hasOwnProperty(key)) {
-            if (obj[key]) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            if (obj[key] && typeof obj[key] === 'object' && Object.keys(obj[key]).length > 0) {
                 return false;
             }
         }

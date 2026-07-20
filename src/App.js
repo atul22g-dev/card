@@ -17,11 +17,11 @@ function App() {
         <Route index element={<AuthUser authentication={false}> <Login /> </AuthUser>} />
         <Route path='/signup' element={<AuthUser authentication={false}> <Signup /> </AuthUser>} />
         {/* Card */}
-        <Route path='/card' element={<AuthUser authentication={false}><Main /></AuthUser>} />
+        <Route path='/card' element={<AuthUser authentication={true}><Main /></AuthUser>} />
         {/* Dashboard */}
         <Route path='/dashboard' element={<AuthUser> <Dashboard /> </AuthUser>} />
         {/* Log out */}
-        <Route path='/logout' element={<AuthUser authentication={false}><Logout /></AuthUser>} />
+        <Route path='/logout' element={<AuthUser authentication={true}><Logout /></AuthUser>} />
         {/*  */}
         <Route path="*" element={<AuthUser authentication={false}> <Login /> </AuthUser>} />
       </Routes>

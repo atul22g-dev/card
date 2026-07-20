@@ -16,7 +16,7 @@ const CardData = () => {
         return (
         key[1].value === undefined ? 
           <div key={key}
-            className={`card-data font-semibold text-2xl themeOutLine outline-offset-[1px] !cursor-default`}
+            className={`card-data font-semibold text-2xl themeOutLine !cursor-default`}
           >
             {value.join(' ')}
           </div> : ''
@@ -28,15 +28,15 @@ const CardData = () => {
         return (
           key[1].value !== undefined ?
 
-            <div key={key} className='flex themeOutLine outline-offset-[1px] outline card-data gap-2 min-h-[38px] !cursor-default'>
+            <div key={key} className='flex card-data gap-3 min-h-[38px] !cursor-default items-center'>
               {/* Icon */}
-              <div className={` icon_con flex justify-center items-center Social`}>
-                <i className={`${key[1].icon} text-white`}></i>
+              <div className={`icon_con flex justify-center items-center Social`}>
+                <i className={`${key[1].icon} text-white text-sm`}></i>
               </div>
               {/* Text */}
-              <div className='flex card-data_text_con flex-col justify-center items-start p-1'>
-                <span>{key[1]?.value}</span>
-                <span>{key[1]?.label}</span>
+              <div className='flex card-data_text_con flex-col justify-center items-start'>
+                <span className="text-sm font-semibold text-[var(--text-primary)]">{key[1]?.value}</span>
+                {key[1]?.label && <span className="text-xs text-[var(--text-muted)]">{key[1]?.label}</span>}
               </div>
             </div> : ''
         )

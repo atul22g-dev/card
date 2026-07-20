@@ -35,16 +35,16 @@ const Personal = ({ data, isOpen }) => {
                 : null}
             {/* Name */}
             {data.department && data.department.department ?
-                <div onClick={() => dispatch(openModal('department'))} className={`card-data card-data-personal text-2xl font-semibold themeOutLine outline-offset-[1px] outline ${isOpen === 'department' ? 'card-data_active' : ''}`}>{data?.department?.department}</div>
+                <div onClick={() => dispatch(openModal({ openModal: 'department' }))} className={`card-data card-data-personal text-2xl font-semibold themeOutLine outline-offset-[1px] outline ${isOpen === 'department' ? 'card-data_active' : ''}`}>{data?.department?.department}</div>
                 : null}
 
 
-            {/* Comany */}
+            {/* Company */}
             {/* Default */}
             {isOpen === 'company' && !data?.company?.company ?
                 <div className={`card-data card-data_comman themeOutLine text-2xl card-data-personal font-semibold outline-offset-[1px] outline ${isOpen === 'company' ? 'card-data_active' : ''}`}>Company Name</div>
                 : null}
-            {/* Name */}
+            {/* Value */}
             {data.company && data.company.company ?
                 <div onClick={() => dispatch(openModal({ openModal: 'company' }))} className={`card-data-personal card-data font-semibold text-2xl themeOutLine outline-offset-[1px] outline ${isOpen === 'company' ? 'card-data_active' : ''}`}>{data?.company?.company}</div>
                 : null}
@@ -56,7 +56,7 @@ const Personal = ({ data, isOpen }) => {
                 : null}
             {/* Name */}
             {data.headline && data.headline.headline ?
-                <div onClick={() => dispatch(openModal({ openModal: 'headline' }))} className={`card-data-personal card-data text-[#525f66] text-sm themeOutLine outline-offset-[1px] outline ${isOpen === 'headline' ? 'card-data_active' : ''}`}>{data?.headline?.headline}</div>
+                <div onClick={() => dispatch(openModal({ openModal: 'headline' }))} className={`card-data-personal card-data text-[var(--text-muted)] text-sm themeOutLine outline-offset-[1px] outline ${isOpen === 'headline' ? 'card-data_active' : ''}`}>{data?.headline?.headline}</div>
                 : null}
         </>
     )

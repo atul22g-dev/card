@@ -10,7 +10,15 @@ import reportWebVitals from './reportWebVitals';
 import { Provider } from 'react-redux';
 import store from './data/index';
 import { ThemeProvider } from "@material-tailwind/react";
-import 'fontawesome6pro/css/all.min.css'
+import '../node_modules/fontawesome6pro/css/all.min.css'
+
+// Initialize dark mode before React render to prevent flash
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+  }
+})();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

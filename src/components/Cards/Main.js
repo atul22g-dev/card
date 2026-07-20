@@ -2,15 +2,18 @@ import React, {useEffect} from 'react'
 import Card from './card'
 import CardText from './Details'
 import Modal from './Modals/Modal'
+import Navbar from '../common/Navbar'
 
 const Main = () => {
     useEffect(() => {
-        document.title = 'Create a  New Card';
+        document.title = 'Create a New Card';
     }, [])
     
     return (
-        // Card Container
-        <div className='absolute w-full h-full card_con'>
+        <>
+        <Navbar />
+        {/* Card Container */}
+        <div className='relative w-full h-[calc(100vh-56px)] card_con'>
         {/* Card */}
         <Card/>
         {/* Card Text */}
@@ -18,6 +21,7 @@ const Main = () => {
         {/* Modal */}
         <Modal/>
         </div>
+        </>
     )
 }
 

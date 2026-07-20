@@ -27,7 +27,16 @@ export const AuthUser = ({ children, authentication = true }) => {
     }, [authStatus, authentication, dispatch, navigate])
 
     return (
-        loader ? <h1>Loading...</h1> : <>{children}</>
+        loader ? (
+            <div className="min-h-screen flex items-center justify-center bg-[var(--bg-secondary)]">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl themeBg flex items-center justify-center pulse-ring">
+                        <i className="fa-solid fa-spinner text-white animate-spin"></i>
+                    </div>
+                    <p className="text-sm text-[var(--text-muted)]">Loading your account...</p>
+                </div>
+            </div>
+        ) : <>{children}</>
     )
 }
 
