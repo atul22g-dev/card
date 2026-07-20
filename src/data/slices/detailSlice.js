@@ -14,6 +14,12 @@ export const fetchDetails = createAsyncThunk(
         } catch (error) {
             throw error;
         }
+    },
+    {
+        condition: (_, { getState }) => {
+            const { details } = getState();
+            return details.details.length === 0;
+        },
     }
 );
 // Detail Silce

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './global.css';
 import './utility/utility.css';
 import './utility/card.css';
+import './utility/card-text.css';
 import './utility/resposive.css';
 import { BrowserRouter } from "react-router-dom";
 import App from './App';

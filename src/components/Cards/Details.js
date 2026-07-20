@@ -9,42 +9,55 @@ import { storeSingleData } from '../../data/slices/databaseSlice';
 
 
 const Details = ({ details, fetchDetails, loader, openModal, data, user }) => {
-    const [fetched, setFetched] = useState(false);
-    const sData = useSelector(state => state.database.singleData);
+    const [fetchedId, setFetchedId] = useState(null);
     const dispatch = useDispatch();
     const location = useLocation();
     const headers = location.search;
+    const reduxSingleData = useSelector(state => state.database.singleData);
 
     useEffect(() => {
-        if (!fetched) {
-            const addOneData = async () => {
+        if (headers) {
+            const currentId = headers.replace('?', '');
+            // Only fetch when the card ID actually changes (handles navigating between cards on same route)
+            if (fetchedId === currentId) return;
+
+            const loadData = async () => {
                 try {
-                    let data = await dbService.fetchOnedata(headers);
-                    dispatch(storeSingleData(data));
+                    const reduxId = reduxSingleData && reduxSingleData[0] && reduxSingleData[0].$id;
+
+                    // Use Redux data if it already matches this card, otherwise fetch
+                    let result;
+                    if (reduxId === currentId) {
+                        result = reduxSingleData;
+                    } else {
+                        result = await dbService.fetchOnedata(headers);
+                    }
+
+                    if (result && result[0]) {
+                        dispatch(storeSingleData(result));
+                        dispatch(setCardData(result));
+                        // Restore the saved theme color
+                        try {
+                            const savedData = JSON.parse(result[0].Data);
+                            if (savedData.__themeColor) {
+                                document.documentElement.style.setProperty('--theme-color', `rgb(${savedData.__themeColor})`);
+                                document.documentElement.style.setProperty('--light-theme-color', `rgba(${savedData.__themeColor}, .25)`);
+                                document.documentElement.style.setProperty('--theme-color-rgb', savedData.__themeColor);
+                            }
+                        } catch (e) {
+                            // Data parsing failed, ignore
+                        }
+                    }
+                    setFetchedId(currentId);
                 } catch (error) {
                     console.error(error);
+                    // Don't set fetchedId on error so it can retry on next relevant re-render
                 }
             };
-
-            const storeOneData = (sData) => {
-                dispatch(setCardData(sData));
-            };
-
-            if (headers) {
-                storeOneData(sData);
-                addOneData();
-            }
-            fetchDetails();
+            loadData();
         }
-
-        if (isEmpty(headers)) {
-            setFetched(true);
-        }
-        if (!isEmpty(sData)) {
-            setFetched(true);
-        }
-
-    }, [dispatch, fetchDetails, headers, details, fetched, sData]);
+        fetchDetails();
+    }, [dispatch, fetchDetails, headers, fetchedId]);
 
     return (
         <div className='w-[60vw] max-md:w-[100vw] mx-14 my-7 absolute card_con_right left-[33vw] top-14 bottom-0 right-0'>
@@ -56,138 +69,46 @@ const Details = ({ details, fetchDetails, loader, openModal, data, user }) => {
 
             {/* Add your details  */}
             <div className="space-y-8">
-                {/* Personal */}
-                <div className="fade-in">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-1 h-5 themeBg rounded-full"></div>
-                        <h4 className='text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider'>Personal</h4>
-                    </div>
-                    <ul className='flex flex-row detail_box flex-wrap gap-4'>
-                        {!loader && details.map((personal) => {
-                            return (
-                                personal.heading === "Personal" ? (
-                                    <li className={`${data.cardData[personal.openModal]?.saveData === 'true' ? 'isDesable' : 'isActive'} w-fit hover-lift`} onClick={data.cardData[personal.openModal]?.saveData === 'true' ? null : () => dispatch(openModal({ openModal: personal.openModal }))} key={personal.id}>
-                                        <div className='flex flex-col justify-center items-center px-6 py-5'>
-                                            <div className="w-10 h-10 rounded-xl themeLgbg flex items-center justify-center mb-3">
-                                                <i className={`${personal.icon} textTheme text-lg`}></i>
+                {/* Section renderer - dynamically groups items by heading */}
+                {!loader && ['Personal', 'General', 'Social', 'Messaging', 'Business', 'Payment'].map((section, sectionIdx) => {
+                    const sectionItems = details.filter(d => d.heading === section);
+                    if (sectionItems.length === 0) return null;
+                    return (
+                        <div key={section} className="fade-in-stagger">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-1 h-5 themeBg rounded-full"></div>
+                                <h4 className='text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider'>{section}</h4>
+                                <span className="text-[10px] text-[var(--text-muted)] ml-auto">{sectionItems.length} fields</span>
+                            </div>
+                            <ul className='flex flex-row detail_box flex-wrap gap-4'>
+                                {sectionItems.map((item) => {
+                                    const modalKey = item.socialName || item.openModal;
+                                    const isSaved = data.cardData[modalKey]?.saveData === 'true';
+                                    return (
+                                        <li 
+                                            key={item.id}
+                                            className={`${isSaved ? 'isDesable' : 'isActive'} w-fit hover-lift`} 
+                                            onClick={isSaved ? null : () => {
+                                                if (item.openModal === 'social') {
+                                                    dispatch(openModal({ openModal: item.openModal, name: item.socialName }));
+                                                } else {
+                                                    dispatch(openModal({ openModal: item.openModal }));
+                                                }
+                                            }}
+                                        >
+                                            <div className='flex flex-col justify-center items-center px-6 py-5'>
+                                                <div className="w-10 h-10 rounded-xl themeLgbg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200">
+                                                    <i className={`${item.icon} textTheme text-lg`}></i>
+                                                </div>
+                                                <p className='font-medium text-sm text-[var(--text-secondary)]'>{item.name}</p>
                                             </div>
-                                            <p className='font-medium text-sm text-[var(--text-secondary)]'>{personal.name}</p>
-                                        </div>
-                                    </li>
-                                ) : null)
-                        })}
-                    </ul>
-                </div>
-
-                {/* General */}
-                <div className="fade-in">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-1 h-5 themeBg rounded-full"></div>
-                        <h4 className='text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider'>General</h4>
-                    </div>
-                    <ul className='flex flex-row detail_box flex-wrap gap-4'>
-                        {!loader && details.map(General => (
-                            General.heading === "General" ? (
-                                <li className={`${data.cardData[General.socialName]?.saveData === 'true' ? 'isDesable' : 'isActive'} w-fit hover-lift`} onClick={data.cardData[General.socialName]?.saveData === 'true' ? null : () => dispatch(openModal({ openModal: General.openModal, name: General.socialName }))} key={General.id}>
-                                    <div className='flex flex-col justify-center items-center px-6 py-5'>
-                                        <div className="w-10 h-10 rounded-xl themeLgbg flex items-center justify-center mb-3">
-                                            <i className={`${General.icon} textTheme text-lg`}></i>
-                                        </div>
-                                        <p className='font-medium text-sm text-[var(--text-secondary)]'>{General.name}</p>
-                                    </div>
-                                </li>
-                            ) : null
-                        ))}
-                    </ul>
-                </div>
-
-                {/* Social */}
-                <div className="fade-in">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-1 h-5 themeBg rounded-full"></div>
-                        <h4 className='text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider'>Social</h4>
-                    </div>
-                    <ul className='flex flex-row detail_box flex-wrap gap-4'>
-                        {!loader && details.map(General => (
-                            General.heading === "Social" ? (
-                                <li className={`${data.cardData[General.socialName]?.saveData === 'true' ? 'isDesable' : 'isActive'} w-fit hover-lift`} onClick={data.cardData[General.socialName]?.saveData === 'true' ? null : () => dispatch(openModal({ openModal: General.openModal, name: General.socialName }))} key={General.id}>
-                                    <div className='flex flex-col justify-center items-center px-6 py-5'>
-                                        <div className="w-10 h-10 rounded-xl themeLgbg flex items-center justify-center mb-3">
-                                            <i className={`${General.icon} textTheme text-lg`}></i>
-                                        </div>
-                                        <p className='font-medium text-sm text-[var(--text-secondary)]'>{General.name}</p>
-                                    </div>
-                                </li>
-                            ) : null
-                        ))}
-                    </ul>
-                </div>
-
-                {/* Messaging */}
-                <div className="fade-in">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-1 h-5 themeBg rounded-full"></div>
-                        <h4 className='text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider'>Messaging</h4>
-                    </div>
-                    <ul className='flex flex-row detail_box flex-wrap gap-4'>
-                        {!loader && details.map(General => (
-                            General.heading === "Messaging" ? (
-                                <li className={`${data.cardData[General.socialName]?.saveData === 'true' ? 'isDesable' : 'isActive'} w-fit hover-lift`} onClick={data.cardData[General.socialName]?.saveData === 'true' ? null : () => dispatch(openModal({ openModal: General.openModal, name: General.socialName }))} key={General.id}>
-                                    <div className='flex flex-col justify-center items-center px-6 py-5'>
-                                        <div className="w-10 h-10 rounded-xl themeLgbg flex items-center justify-center mb-3">
-                                            <i className={`${General.icon} textTheme text-lg`}></i>
-                                        </div>
-                                        <p className='font-medium text-sm text-[var(--text-secondary)]'>{General.name}</p>
-                                    </div>
-                                </li>
-                            ) : null
-                        ))}
-                    </ul>
-                </div>
-
-                {/* Business */}
-                <div className="fade-in">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-1 h-5 themeBg rounded-full"></div>
-                        <h4 className='text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider'>Business</h4>
-                    </div>
-                    <ul className='flex flex-row detail_box flex-wrap gap-4'>
-                        {!loader && details.map(General => (
-                            General.heading === "Business" ? (
-                                <li className={`${data.cardData[General.socialName]?.saveData === 'true' ? 'isDesable' : 'isActive'} w-fit hover-lift`} onClick={data.cardData[General.socialName]?.saveData === 'true' ? null : () => dispatch(openModal({ openModal: General.openModal, name: General.socialName }))} key={General.id}>
-                                    <div className='flex flex-col justify-center items-center px-6 py-5'>
-                                        <div className="w-10 h-10 rounded-xl themeLgbg flex items-center justify-center mb-3">
-                                            <i className={`${General.icon} textTheme text-lg`}></i>
-                                        </div>
-                                        <p className='font-medium text-sm text-[var(--text-secondary)]'>{General.name}</p>
-                                    </div>
-                                </li>
-                            ) : null
-                        ))}
-                    </ul>
-                </div>
-
-                {/* Payment */}
-                <div className="fade-in">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-1 h-5 themeBg rounded-full"></div>
-                        <h4 className='text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider'>Payment</h4>
-                    </div>
-                    <ul className='flex flex-row detail_box flex-wrap gap-4'>
-                        {!loader && details.map(General => (
-                            General.heading === "Payment" ? (
-                                <li className={`${data.cardData[General.socialName]?.saveData === 'true' ? 'isDesable' : 'isActive'} w-fit hover-lift`} onClick={data.cardData[General.socialName]?.saveData === 'true' ? null : () => dispatch(openModal({ openModal: General.openModal, name: General.socialName }))} key={General.id}>
-                                    <div className='flex flex-col justify-center items-center px-6 py-5'>
-                                        <div className="w-10 h-10 rounded-xl themeLgbg flex items-center justify-center mb-3">
-                                            <i className={`${General.icon} textTheme text-lg`}></i>
-                                        </div>
-                                        <p className='font-medium text-sm text-[var(--text-secondary)]'>{General.name}</p>
-                                    </div>
-                                </li>
-                            ) : null
-                        ))}
-                    </ul>
-                </div>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    );
+                })}
             </div>
 
             <div className='sticky bottom-0 mt-10 py-4 px-2 bg-gradient-to-t from-[var(--bg-secondary)] via-[var(--bg-secondary)] to-transparent'>

@@ -15,11 +15,19 @@ const dataSlice = createSlice({
     reducers: {
         setCardData(state, action) {
             let sData = action.payload;
-            let singleData = sData[0] ? sData[0].Data : '';
-            let jsonSingleData = singleData[0] ? JSON.parse(singleData) : '';
+            let singleData = Array.isArray(sData) && sData[0] ? sData[0].Data : '';
+            let jsonSingleData = {};
+            try {
+                const parsed = singleData ? JSON.parse(singleData) : {};
+                // Remove internal __themeColor key before setting card data
+                const { __themeColor, ...cleanData } = parsed;
+                jsonSingleData = cleanData;
+            } catch (e) {
+                console.error('Failed to parse saved card data:', e);
+                jsonSingleData = {};
+            }
             state.cardData = jsonSingleData;
             state.savecardData = jsonSingleData;
-            
         },
         updateCardData(state, action) {
             const { modal, field, value, icon } = action.payload;
@@ -64,8 +72,8 @@ const dataSlice = createSlice({
                 ...state.cardData[modalName],
                 saveData: 'true'
             };
-            state.modals[modalName] = false;
             state.modals['social'] = false;
+            state.modals[modalName] = false;
             state.isOpen = null;
             state.cardData[modalName] = {
                 ...state.cardData[modalName],

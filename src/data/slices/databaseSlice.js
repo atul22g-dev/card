@@ -16,7 +16,7 @@ const databaseSlice = createSlice({
         },
         storeSingleData (state, action) {
             state.singleData = action.payload;
-            state.singleDataId = action.payload[0].$id;
+            state.singleDataId = action.payload && action.payload[0] ? action.payload[0].$id : null;
         }
     }
 });

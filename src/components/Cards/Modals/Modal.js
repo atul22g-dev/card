@@ -3,63 +3,57 @@ import { useSelector, useDispatch } from 'react-redux';
 import { closeModal, saveData, openDeleteModal, removeField } from '../../../data/slices/dataSlice';
 import * as personal from './content/personal';
 import * as generial from './content/generial';
+import DeleteModal from '../../common/DeleteModal';
 
+/**
+ * Modal — field editor overlay.
+ * Shows inline form for personal / social fields and a DeleteModal
+ * confirmation when the user clicks "Remove".
+ */
 const Modal = () => {
     const data = useSelector(state => state.data);
     const modals = useSelector(state => state.data.modals);
     const isOpen = useSelector(state => state.data.isOpen);
     const isDelete = useSelector(state => state.data.isDelete);
     const dispatch = useDispatch();
+
+    // Check if required fields have actual content for the current modal
+    const hasContent = (() => {
+        if (!isOpen || !data.cardData[isOpen]) return false;
+        const field = data.cardData[isOpen];
+        if (isOpen === 'name') return field?.firstName?.trim() && field?.lastName?.trim();
+        if (isOpen === 'jobTitle') return field?.jobTitle?.trim();
+        if (isOpen === 'department') return field?.department?.trim();
+        if (isOpen === 'company') return field?.company?.trim();
+        if (isOpen === 'headline') return field?.headline?.trim();
+        return field?.value?.trim();
+    })();
+
     return (
         <>
-            {/* Delete Modal */}
-            {isDelete[isOpen] &&
-                (<>
-                    <div
-                        className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none scale-in"
-                    >
-                        <div className="relative w-auto my-6 mx-4 sm:mx-auto sm:max-w-md">
-                            {/*content*/}
-                            <div className="border-0 rounded-2xl shadow-xl relative flex flex-col w-full bg-[var(--bg-primary)] outline-none focus:outline-none">
-                                {/*body*/}
-                                <div className="px-5 sm:px-8 py-8 sm:py-10 flex flex-col items-center gap-4 text-center">
-                                    <div className='w-16 h-16 rounded-full bg-red-50 dark:bg-red-500/10 border-2 border-red-200 dark:border-red-500/20 flex items-center justify-center'>
-                                        <svg className='w-8 h-8 text-red-500' aria-hidden="true" focusable="false" data-prefix="far" data-icon="xmark" role="img" viewBox="0 0 384 512" fill="currentColor">
-                                            <path d="M345 137c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-119 119L73 103c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l119 119L39 375c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l119-119L311 409c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-119-119L345 137z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h3 className='font-semibold text-lg text-[var(--text-primary)]'>Remove this field?</h3>
-                                        <p className='text-sm text-[var(--text-muted)] mt-1'>The information will be permanently removed from your card</p>
-                                    </div>
-                                </div>
-                                {/*footer*/}
-                                <div className="flex flex-col sm:flex-row items-center justify-end gap-2 sm:gap-3 px-5 sm:px-8 py-4 sm:py-5 border-t border-[var(--border-color)]">
-                                    <button
-                                        className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl text-sm font-medium text-[var(--text-secondary)] border border-[var(--border-color)] bg-[var(--bg-primary)] hover:bg-[var(--bg-tertiary)] transition-all duration-200"
-                                        type="button"
-                                        onClick={() => dispatch(openDeleteModal({ modal: isOpen, itstrue: false }))}
-                                    >Cancel</button>
-                                    <button
-                                        onClick={() => dispatch(removeField({ modal: isOpen, itstrue: false }))}
-                                        className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-all duration-200"
-                                    >Remove</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="opacity-25 fixed inset-0 z-40 bg-black backdrop-blur-sm"></div>
-                </>)
-            }
+            {/* Delete confirmation — uses shared DeleteModal */}
+            <DeleteModal
+                title="Remove this field?"
+                description="The information will be permanently removed from your card."
+                isOpen={isDelete[isOpen]}
+                onCancel={() => dispatch(openDeleteModal({ modal: isOpen, itstrue: false }))}
+                onConfirm={() => dispatch(removeField({ modal: isOpen, itstrue: false }))}
+                confirmText="Remove"
+            />
 
-            {/* Modal */}
+            {/* Field editor modal */}
             {(isOpen && !isDelete[isOpen]) && (
                 <>
                     <div
-                        className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none scale-in"
+                        className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && hasContent) {
+                                dispatch(saveData(isOpen));
+                            }
+                            if (e.key === 'Escape') dispatch(closeModal(isOpen));
+                        }}
                     >
-                        <div className="relative w-auto my-6 mx-4 sm:mx-auto sm:max-w-lg">
-                            {/*content*/}
+                        <div className="relative w-auto my-6 mx-4 sm:mx-auto sm:max-w-lg scale-in">
                             <div className="border-0 rounded-2xl shadow-xl relative flex flex-col w-full bg-[var(--bg-primary)] outline-none focus:outline-none">
                                 {/* Header */}
                                 <div className="flex items-center justify-between px-5 sm:px-8 pt-6 sm:pt-8 pb-2">
@@ -69,22 +63,21 @@ const Modal = () => {
                                     <button
                                         onClick={() => dispatch(closeModal(isOpen))}
                                         className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200"
+                                        aria-label="Close modal"
                                     >
                                         <i className="fa-regular fa-xmark text-lg"></i>
                                     </button>
                                 </div>
-                                {/*body*/}
+                                {/* Body — dynamically rendered field inputs */}
                                 <div className="px-5 sm:px-8 py-5 sm:py-6 flex flex-col gap-5">
-                                    {/* Personal */}
                                     {modals.name && <personal.Name />}
                                     {modals.jobTitle && <personal.JobTitle />}
                                     {modals.department && <personal.Department />}
                                     {modals.company && <personal.Company />}
                                     {modals.headline && <personal.Headline />}
-                                    {/* Generial */}
                                     {modals.social && <generial.Social />}
                                 </div>
-                                {/*footer*/}
+                                {/* Footer */}
                                 <div className="flex flex-col sm:flex-row items-center justify-between px-5 sm:px-8 py-4 sm:py-5 border-t border-[var(--border-color)] gap-3">
                                     <button
                                         onClick={() => dispatch(openDeleteModal({ modal: isOpen, itstrue: true }))}
@@ -100,9 +93,9 @@ const Modal = () => {
                                             onClick={() => dispatch(closeModal(isOpen))}
                                         >Close</button>
                                         <button
-                                            onClick={!data.cardData[isOpen] ? null : () => dispatch(saveData(isOpen))}
+                                            onClick={!hasContent ? null : () => dispatch(saveData(isOpen))}
                                             className={`flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                                                data.cardData[isOpen]
+                                                hasContent
                                                     ? 'themeBg text-white hover:brightness-90 hover:shadow-lg hover:shadow-[var(--theme-color)]/30'
                                                     : 'border border-[var(--btn-disable-color)] text-[var(--btn-disable-color)] cursor-not-allowed'
                                             }`}
@@ -115,13 +108,11 @@ const Modal = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="opacity-25 fixed inset-0 z-40 bg-black backdrop-blur-sm"></div>
+                    <div className="modal-backdrop opacity-25 fixed inset-0 z-40 bg-black backdrop-blur-sm"></div>
                 </>
             )}
         </>
     )
 }
 
-
 export default Modal;
-

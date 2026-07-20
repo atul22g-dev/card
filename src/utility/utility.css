@@ -1,83 +1,92 @@
-.themeLgbg {
-    background-color: var(--light-theme-color);
-}
+/* =============================================================
+   CORE UTILITY CLASSES
+   Theme-aware helpers used across the entire app.
+   ============================================================= */
 
-.themeLgbg-hover:hover {
-    background-color: var(--light-theme-color-hover);
-}
+/* --- Background: light theme tint --- */
+.themeLgbg         { background-color: var(--light-theme-color); }
+.themeLgbg-hover:hover { background-color: var(--light-theme-color-hover); }
 
-.themeBg {
-    background-color: var(--theme-color);
-}
-
+/* --- Background: solid theme colour --- */
+.themeBg           { background-color: var(--theme-color); }
 .themeBg-hover:hover {
     background-color: var(--theme-color);
     filter: brightness(110%);
 }
 
-.themeOutLine {
-    outline-color: var(--theme-color);
-}
+/* --- Outline colour --- */
+.themeOutLine      { outline-color: var(--theme-color); }
 
-.textTheme {
-    color: var(--theme-color);
-}
+/* --- Text colour --- */
+.textTheme         { color: var(--theme-color); }
+.textTheme-hover:hover { color: var(--theme-color); }
 
-.textTheme-hover:hover {
-    color: var(--theme-color);
-}
+/* --- Accent / success colour --- */
+.addColor          { color: var(--add-color); }
 
-.addColor {
-    color: var(--add-color);
-}
+/* =============================================================
+   ANIMATIONS
+   ============================================================= */
 
-/* Loading spinner animation */
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
-.spinner {
-    animation: spin 0.8s linear infinite;
-}
+.spinner { animation: spin 0.8s linear infinite; }
 
-/* Fade in animation */
+/* Fade in from below */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
 }
-.fade-in {
-    animation: fadeIn 0.4s ease-out;
-}
+.fade-in { animation: fadeIn 0.4s ease-out; }
 
-/* Staggered fade in for multiple items */
-.fade-in-stagger > * {
-    animation: fadeIn 0.4s ease-out both;
-}
+/* Staggered fade-in for groups */
+.fade-in-stagger > * { animation: fadeIn 0.4s ease-out both; }
 .fade-in-stagger > *:nth-child(1) { animation-delay: 0.05s; }
 .fade-in-stagger > *:nth-child(2) { animation-delay: 0.1s; }
 .fade-in-stagger > *:nth-child(3) { animation-delay: 0.15s; }
 .fade-in-stagger > *:nth-child(4) { animation-delay: 0.2s; }
 .fade-in-stagger > *:nth-child(5) { animation-delay: 0.25s; }
 .fade-in-stagger > *:nth-child(6) { animation-delay: 0.3s; }
+.fade-in-stagger > *:nth-child(7) { animation-delay: 0.35s; }
+.fade-in-stagger > *:nth-child(8) { animation-delay: 0.4s; }
 
-/* Scale in animation */
+/* Staggered scale-in for detail picker items */
+.detail_box > li { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.detail_box > li:nth-child(1)  { animation-delay: 0.02s; }
+.detail_box > li:nth-child(2)  { animation-delay: 0.04s; }
+.detail_box > li:nth-child(3)  { animation-delay: 0.06s; }
+.detail_box > li:nth-child(4)  { animation-delay: 0.08s; }
+.detail_box > li:nth-child(5)  { animation-delay: 0.10s; }
+.detail_box > li:nth-child(6)  { animation-delay: 0.12s; }
+.detail_box > li:nth-child(7)  { animation-delay: 0.14s; }
+.detail_box > li:nth-child(8)  { animation-delay: 0.16s; }
+
+@keyframes backdropFade {
+    from { opacity: 0; }
+    to   { opacity: 0.25; }
+}
+.modal-backdrop { animation: backdropFade 0.2s ease-out; }
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slideDown { animation: slideDown 0.2s ease-out; }
+
 @keyframes scaleIn {
     from { opacity: 0; transform: scale(0.95) translateY(10px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
 }
-.scale-in {
-    animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
+.scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
 
-/* Slide up animation */
 @keyframes slideUp {
     from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
 }
-.slide-up {
-    animation: slideUp 0.4s ease-out;
-}
+.slide-up { animation: slideUp 0.4s ease-out; }
 
-/* Glass morphism effect */
+/* --- Glass morphism effect --- */
 .glass {
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(12px);
@@ -85,28 +94,24 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Card hover lift effect */
-.hover-lift {
-    transition: var(--transition-base);
-}
+/* --- Card hover lift --- */
+.hover-lift { transition: var(--transition-base); }
 .hover-lift:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-lg);
 }
 
-/* Pulse ring animation */
+/* --- Pulse ring (used for loading spinners) --- */
 @keyframes pulseRing {
-    0% { box-shadow: 0 0 0 0 rgba(var(--theme-color-rgb), 0.4); }
-    70% { box-shadow: 0 0 0 12px rgba(var(--theme-color-rgb), 0); }
+    0%   { box-shadow: 0 0 0 0 rgba(var(--theme-color-rgb), 0.4); }
+    70%  { box-shadow: 0 0 0 12px rgba(var(--theme-color-rgb), 0); }
     100% { box-shadow: 0 0 0 0 rgba(var(--theme-color-rgb), 0); }
 }
-.pulse-ring {
-    animation: pulseRing 2s infinite;
-}
+.pulse-ring { animation: pulseRing 2s infinite; }
 
-/* Shimmer loading effect */
+/* --- Loading shimmer --- */
 @keyframes shimmer {
-    0% { background-position: -200% 0; }
+    0%   { background-position: -200% 0; }
     100% { background-position: 200% 0; }
 }
 .shimmer {
@@ -115,7 +120,7 @@
     animation: shimmer 1.5s infinite;
 }
 
-/* Badge */
+/* --- Badge --- */
 .badge {
     display: inline-flex;
     align-items: center;
@@ -126,7 +131,7 @@
     font-weight: 600;
 }
 
-/* Truncate text */
+/* --- Truncate to 2 lines --- */
 .truncate-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -134,21 +139,17 @@
     overflow: hidden;
 }
 
-/* Focus ring */
+/* --- Focus ring --- */
 .focus-ring:focus-visible {
     outline: 2px solid var(--theme-color);
     outline-offset: 2px;
 }
 
-/* Smooth transition helper */
-.smooth-transition {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+/* =============================================================
+   DARK MODE OVERRIDES
+   ============================================================= */
 
-/* Dark mode utility overrides */
-.dark .themeLgbg {
-    background-color: rgba(var(--theme-color-rgb), 0.15);
-}
+.dark .themeLgbg { background-color: rgba(var(--theme-color-rgb), 0.15); }
 
 .dark .shimmer {
     background: linear-gradient(90deg, #252640 25%, #2a2b45 50%, #252640 75%);
@@ -158,28 +159,4 @@
 .dark .glass {
     background: rgba(26, 27, 46, 0.8);
     border-color: rgba(255, 255, 255, 0.08);
-}
-
-.dark .card-data_comman {
-    color: var(--btn-disable-color);
-}
-
-.dark .card-data {
-    color: var(--text-primary);
-}
-
-.dark .card-data .icon_con {
-    background-color: var(--theme-color);
-}
-
-.dark .card-data_text_con span:first-child {
-    color: var(--text-primary);
-}
-
-.dark .card-data_text_con span:last-child {
-    color: var(--text-muted);
-}
-
-.dark .card-data:hover {
-    background-color: rgba(var(--theme-color-rgb), 0.08);
 }

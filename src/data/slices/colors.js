@@ -14,6 +14,12 @@ export const fetchColors = createAsyncThunk(
         } catch (error) {
             throw error;
         }
+    },
+    {
+        condition: (_, { getState }) => {
+            const { colors } = getState();
+            return colors.colors.length === 0;
+        },
     }
 );
 // Colors Slice

@@ -14,18 +14,24 @@ export class DBService {
         this.Databases = new Databases(this.client);
     }
 
-    AddData(user, data) {
-        console.log(user.$id);
-        const Time = new Date().toLocaleTimeString();
-        const promise = this.Databases.createDocument(conf.appwriteDatabaseId, conf.appwriteCollectionId, ID.unique(), { Name: user.name, Email: user.email, Data: JSON.stringify(data), Time: Time, UserID: user.$id });
+    // Read the active theme color from the CSS variable
+    getCurrentThemeColor() {
+        return getComputedStyle(document.documentElement)
+            .getPropertyValue('--theme-color-rgb').trim() || '244, 90, 87';
+    }
 
-        promise.then(function () {
+    async AddData(user, data) {
+        const Time = new Date().toLocaleTimeString();
+        // Embed the current theme color into card data so it persists
+        const cardWithColor = { ...data, __themeColor: this.getCurrentThemeColor() };
+        try {
+            await this.Databases.createDocument(conf.appwriteDatabaseId, conf.appwriteCollectionId, ID.unique(), { Name: user.name, Email: user.email, Data: JSON.stringify(cardWithColor), Time: Time, UserID: user.$id });
             console.log("Data Add Successfully");
             window.location.href = conf.SiteUrl + '/dashboard';
-        }, function (error) {
+        } catch (error) {
             console.log("Data Not Add " + error);
             handleErrors({ message: error.message })
-        });
+        }
     }
 
     async fetchdata() {
@@ -57,7 +63,9 @@ export class DBService {
     async updateData(headers,user, data) {
         headers = headers.replace("?", "");
         const Time = new Date().toLocaleTimeString();
-        const promise = await this.Databases.updateDocument(conf.appwriteDatabaseId, conf.appwriteCollectionId, headers, { Name: user.name, Email: user.email, Data: JSON.stringify(data), Time: Time });
+        // Embed the current theme color into card data so it persists
+        const cardWithColor = { ...data, __themeColor: this.getCurrentThemeColor() };
+        const promise = await this.Databases.updateDocument(conf.appwriteDatabaseId, conf.appwriteCollectionId, headers, { Name: user.name, Email: user.email, Data: JSON.stringify(cardWithColor), Time: Time });
         
         if (promise) {
             window.location.href = '/dashboard'

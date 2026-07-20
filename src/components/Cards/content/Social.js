@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { connect, useDispatch } from 'react-redux';
-import { openModal, updateCardData } from '../../../data/slices/dataSlice';
+import { openModal } from '../../../data/slices/dataSlice';
 import { findCardInon } from '../../func/AllFunc';
 
 const Social = ({ data, isOpen, details, color, saveData, isSocial }) => {
@@ -56,4 +56,4 @@ const mapStateToProps = state => ({
     isSocial: state.data.isSocial,
 });
 
-export default connect(mapStateToProps, { updateCardData })(Social);
+export default connect(mapStateToProps)(Social);
