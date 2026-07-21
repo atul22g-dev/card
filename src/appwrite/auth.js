@@ -20,12 +20,22 @@ export class DBService {
             .getPropertyValue('--theme-color-rgb').trim() || '244, 90, 87';
     }
 
-    async AddData(user, data) {
+    async AddData(user, data, title = '') {
         const Time = new Date().toLocaleTimeString();
-        // Embed the current theme color into card data so it persists
-        const cardWithColor = { ...data, __themeColor: this.getCurrentThemeColor() };
+        // Embed the current theme color and title into card data so they persist
+        const enrichedData = {
+            ...data,
+            __cardTitle: title || 'Untitled Card',
+            __themeColor: this.getCurrentThemeColor()
+        };
         try {
-            await this.Databases.createDocument(conf.appwriteDatabaseId, conf.appwriteCollectionId, ID.unique(), { Name: user.name, Email: user.email, Data: JSON.stringify(cardWithColor), Time: Time, UserID: user.$id });
+            await this.Databases.createDocument(conf.appwriteDatabaseId, conf.appwriteCollectionId, ID.unique(), { 
+                Name: user.name, 
+                Email: user.email, 
+                Data: JSON.stringify(enrichedData), 
+                Time: Time, 
+                UserID: user.$id 
+            });
             console.log("Data Add Successfully");
             window.location.href = conf.SiteUrl + '/dashboard';
         } catch (error) {
@@ -60,12 +70,21 @@ export class DBService {
             window.location.href = '/dashboard'
         }
     }
-    async updateData(headers,user, data) {
+    async updateData(headers, user, data, title = '') {
         headers = headers.replace("?", "");
         const Time = new Date().toLocaleTimeString();
-        // Embed the current theme color into card data so it persists
-        const cardWithColor = { ...data, __themeColor: this.getCurrentThemeColor() };
-        const promise = await this.Databases.updateDocument(conf.appwriteDatabaseId, conf.appwriteCollectionId, headers, { Name: user.name, Email: user.email, Data: JSON.stringify(cardWithColor), Time: Time });
+        // Embed the current theme color and title into card data so they persist
+        const enrichedData = {
+            ...data,
+            __cardTitle: title || 'Untitled Card',
+            __themeColor: this.getCurrentThemeColor()
+        };
+        const promise = await this.Databases.updateDocument(conf.appwriteDatabaseId, conf.appwriteCollectionId, headers, { 
+            Name: user.name, 
+            Email: user.email, 
+            Data: JSON.stringify(enrichedData), 
+            Time: Time 
+        });
         
         if (promise) {
             window.location.href = '/dashboard'

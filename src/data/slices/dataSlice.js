@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
     savecardData: '',  // Stored as JSON string (matches Appwrite format)
     cardData: {},
+    cardTitle: '',     // Editable card title shown in dashboard sidebar
     modals: {},
     isDelete: {},
     isOpen: null,
@@ -28,6 +29,8 @@ const dataSlice = createSlice({
             }
             state.cardData = jsonSingleData;
             state.savecardData = singleData;  // Store the raw JSON string from Appwrite
+            // Extract card title from inside the Data JSON (__cardTitle key)
+            state.cardTitle = jsonSingleData.__cardTitle || '';
         },
         updateCardData(state, action) {
             const { modal, field, value, icon } = action.payload;
@@ -116,8 +119,25 @@ const dataSlice = createSlice({
             state.modals[modal] = false;
             state.isOpen = null;
         },
+        setCardTitle(state, action) {
+            state.cardTitle = action.payload;
+        },
+        /**
+         * Reset card data to initial empty state.
+         * Used when navigating to create a new card so stale data from a
+         * previously viewed card doesn't persist in Redux.
+         */
+        resetCardData(state) {
+            state.cardData = {};
+            state.savecardData = '';
+            state.cardTitle = '';
+            state.modals = {};
+            state.isDelete = {};
+            state.isOpen = null;
+            state.isSocial = null;
+        },
     },
 });
 
-export const { updateCardData, openModal, closeModal, saveData, openDeleteModal, removeField, setCardData } = dataSlice.actions;
+export const { updateCardData, openModal, closeModal, saveData, openDeleteModal, removeField, setCardData, setCardTitle, resetCardData } = dataSlice.actions;
 export default dataSlice.reducer;

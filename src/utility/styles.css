@@ -1536,7 +1536,6 @@ header {
 /* Scrooll Bar */
 .scrool-hidden {
     overflow-y: scroll;
-    /* position: relative; */
 }
 
 /* Hide scrollbar for Chrome, Safari and Edge */

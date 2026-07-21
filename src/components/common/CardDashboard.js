@@ -6,6 +6,16 @@ import { dbService } from '../../appwrite/auth';
 import { storeData } from '../../data/slices/databaseSlice';
 import { useLocation } from 'react-router-dom';
 
+// Extract card title from the Data JSON string stored in Appwrite
+const extractCardTitle = (dataStr) => {
+    try {
+        const parsed = JSON.parse(dataStr);
+        return parsed.__cardTitle || null;
+    } catch (e) {
+        return null;
+    }
+};
+
 const CardDashboard = () => {
 
 
@@ -66,7 +76,7 @@ const CardDashboard = () => {
                                                 }`}>
                                                 <Link to={`/dashboard?${item.$id}`}>
                                                     <i className="fa-regular fa-credit-card mr-2 text-[var(--text-muted)]"></i>
-                                                    {item.Time}
+                                                    <span className="truncate">{(item.Data ? extractCardTitle(item.Data) : null) || 'Untitled Card'}</span>
                                                 </Link>
                                             </li>
                                         )

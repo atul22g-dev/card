@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { connect, useDispatch, useSelector } from 'react-redux';
 import { fetchDetails } from '../../data/slices/detailSlice';
-import { openModal, setCardData } from '../../data/slices/dataSlice';
-import { restoreThemeColor } from '../../data/slices/colors';
+import { openModal, setCardData, setCardTitle, resetCardData } from '../../data/slices/dataSlice';
+import { restoreThemeColor, setCurrentColor } from '../../data/slices/colors';
 import { isEmpty } from '../func/AllFunc';
 import { dbService } from "../../appwrite/auth";
 import { useLocation } from 'react-router-dom';
@@ -10,6 +10,8 @@ import { storeSingleData } from '../../data/slices/databaseSlice';
 
 
 const Details = ({ details, fetchDetails, loader, openModal, data, user }) => {
+    const [isEditingTitle, setIsEditingTitle] = useState(false);
+    const [titleInput, setTitleInput] = useState('');
     const [fetchedId, setFetchedId] = useState(null);
     const dispatch = useDispatch();
     const location = useLocation();
@@ -54,16 +56,98 @@ const Details = ({ details, fetchDetails, loader, openModal, data, user }) => {
                 }
             };
             loadData();
+        } else {
+            // No headers = creating a new card -> reset stale data from any previously viewed card
+            dispatch(resetCardData());
+            dispatch(setCurrentColor('244, 90, 87'));
+            setFetchedId(null);
         }
         fetchDetails();
-    }, [dispatch, fetchDetails, headers, fetchedId]);
+    }, [dispatch, fetchDetails, headers, fetchedId, reduxSingleData]);
+
+    // Sync local title input with Redux cardTitle
+    useEffect(() => {
+        setTitleInput(data.cardTitle || '');
+    }, [data.cardTitle]);
 
     return (
-        <div className='w-[60vw] max-md:w-[100vw] mx-8 py-7 absolute card_con_right left-[33vw] top-0 bottom-0 right-0 scrool-hidden'>
+        <div className='w-[60vw] max-md:w-[100vw] px-8 py-7 absolute card_con_right left-[33vw] top-0 bottom-0 right-0 scrool-hidden'>
             {/* Heading */}
             <div className="mb-8 fade-in">
                 <h1 className='text-2xl sm:text-3xl font-bold text-[var(--text-primary)]'>Design Your Card</h1>
                 <p className='text-[var(--text-muted)] mt-1.5'>Choose a field below to add information to your card</p>
+            </div>
+
+            {/* Card Title */}
+            <div className="mb-6 fade-in">
+                <label className="block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">
+                    <i className="fa-regular fa-heading mr-1.5"></i>
+                    Card Title
+                </label>
+                {isEditingTitle ? (
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="text"
+                            value={titleInput}
+                            onChange={(e) => setTitleInput(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    dispatch(setCardTitle(titleInput));
+                                    setIsEditingTitle(false);
+                                }
+                                if (e.key === 'Escape') {
+                                    setTitleInput(data.cardTitle || '');
+                                    setIsEditingTitle(false);
+                                }
+                            }}
+                            placeholder="My Business Card"
+                            className="flex-1 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--theme-color)] focus:ring-2 focus:ring-[var(--light-theme-color)] transition-all duration-200"
+                            autoFocus
+                        />
+                        <button
+                            onClick={() => {
+                                dispatch(setCardTitle(titleInput));
+                                setIsEditingTitle(false);
+                            }}
+                            className="w-9 h-9 rounded-lg themeBg text-white flex items-center justify-center hover:brightness-90 transition-all duration-200"
+                            title="Save title"
+                        >
+                            <i className="fa-regular fa-check text-sm"></i>
+                        </button>
+                        <button
+                            onClick={() => {
+                                setTitleInput(data.cardTitle || '');
+                                setIsEditingTitle(false);
+                            }}
+                            className="w-9 h-9 rounded-lg border border-[var(--border-color)] text-[var(--text-muted)] flex items-center justify-center hover:bg-[var(--bg-tertiary)] transition-all duration-200"
+                            title="Cancel"
+                        >
+                            <i className="fa-regular fa-xmark text-sm"></i>
+                        </button>
+                    </div>
+                ) : (
+                    <button
+                        onClick={() => {
+                            setTitleInput(data.cardTitle || '');
+                            setIsEditingTitle(true);
+                        }}
+                        className="group flex items-center gap-3 w-full rounded-xl border border-dashed border-[var(--border-color)] hover:border-[var(--theme-color)] bg-[var(--bg-primary)] hover:bg-[var(--light-theme-color)] px-4 py-3 transition-all duration-200 cursor-pointer"
+                    >
+                        {data.cardTitle ? (
+                            <span className="text-sm font-medium text-[var(--text-primary)]">
+                                {data.cardTitle}
+                            </span>
+                        ) : (
+                            <span className="text-sm text-[var(--text-muted)]">
+                                <i className="fa-regular fa-pen mr-2"></i>
+                                Add a card title...
+                            </span>
+                        )}
+                        <span className="ml-auto text-xs text-[var(--text-muted)] opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <i className="fa-regular fa-pen-to-square"></i>
+                        </span>
+                    </button>
+                )}
             </div>
 
             {/* Add your details  */}
@@ -110,7 +194,7 @@ const Details = ({ details, fetchDetails, loader, openModal, data, user }) => {
                 })}
             </div>
 
-            <div className='sticky bottom-0 mt-10 py-4 px-2 bg-gradient-to-t from-[var(--bg-secondary)] via-[var(--bg-secondary)] to-transparent'>
+            <div className='sticky bottom-0 mt-10 py-4 -mx-8 px-8 bg-gradient-to-t from-[var(--bg-secondary)] via-[var(--bg-secondary)] to-transparent'>
                 <div className="flex justify-between items-center gap-4">
                     <p className='text-sm text-[var(--text-muted)] hidden sm:block'>
                         <i className="fa-regular fa-heart textTheme mr-1"></i>
@@ -120,7 +204,7 @@ const Details = ({ details, fetchDetails, loader, openModal, data, user }) => {
                         !headers ? (
                             <button onClick={() => {
                                 const parsedData = data.savecardData ? JSON.parse(data.savecardData) : {};
-                                dbService.AddData(user, parsedData);
+                                dbService.AddData(user, parsedData, data.cardTitle);
                             }} className={`${isEmpty(data.cardData) ? 'disable-btn' : 'Primay-btn'} btn min-w-[160px]`} type="button">
                                 <i className="fa-regular fa-floppy-disk mr-2"></i>
                                 Create Card
@@ -128,7 +212,7 @@ const Details = ({ details, fetchDetails, loader, openModal, data, user }) => {
                         ) : (
                             <button onClick={() => {
                                 const parsedData = data.savecardData ? JSON.parse(data.savecardData) : {};
-                                dbService.updateData(headers, user, parsedData);
+                                dbService.updateData(headers, user, parsedData, data.cardTitle);
                             }} className={`${isEmpty(data.cardData) ? 'disable-btn' : 'Primay-btn'} btn min-w-[160px]`} type="button">
                                 <i className="fa-regular fa-pen-to-square mr-2"></i>
                                 Update Card

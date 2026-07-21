@@ -37,9 +37,9 @@ const Card = ({ loding, colors, fetchColors, Color }) => {
   }, [Color]);
 
   return (
-    <div className="w-[33vw] h-[calc(100vh-61px)] pt-[10rem] pb-[3rem] card_con_left relative grid place-content-center max-md:hidden themeLgbg smoot_transition left-0 top-0 bottom-0 right-[60vw] overflow-hidden scrool-hidden">
+    <div className="w-[28vw] h-[calc(100vh-61px)] card_con_left relative flex flex-col items-center pt-6 max-md:hidden themeLgbg smoot_transition left-0 top-0 bottom-0 right-[60vw] scrool-hidden overflow-hidden">
       {/* Card */}
-      <div className="w-[28vw] max-w-[380px] scale-in">
+      <div className="w-[28vw] max-w-[380px] scale-in flex-shrink-0">
         <div className="modern-card">
           {/* Card Header */}
           <div className="card-header-modern" style={{ minHeight: '140px' }}>
@@ -47,17 +47,16 @@ const Card = ({ loding, colors, fetchColors, Color }) => {
             <div className="card-header-deco card-header-deco-2"></div>
             <div className="card-header-deco card-header-deco-3"></div>
           </div>
-          
+
           {/* Card Body */}
-          <div className="card-body-modern">
+          <div className="card-body-modern min-h-[20rem]">
             <Personal />
             <Social />
           </div>
         </div>
       </div>
-
       {/* Colors Section */}
-      <div className="w-[28vw] max-w-[380px] color-picker-section">
+      <div className="w-[28vw] max-w-[380px] color-picker-section flex-shrink-0 pb-6 mt-[2rem]">
         <h3 className="color-picker-title">
           <i className="fa-regular fa-palette mr-1.5"></i>
           Theme Colors

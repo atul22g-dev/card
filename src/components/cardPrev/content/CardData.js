@@ -125,7 +125,7 @@ const CardData = () => {
               const vals = Object.entries(value)
               .filter(([k, v]) => !metaKeys.includes(k) && v && v !== 'true' && v !== '')
               .map(([k, v]) => v);
-              if (vals.length === 0 || key === "__themeColor") return null;
+              if (vals.length === 0 || key === "__themeColor" || key === "__cardTitle" ) return null;
               return (
                 <div key={key} className="card-personal-item-modern card-personal-item-preview">
                   <div className="card-personal-item-icon-wrap">
