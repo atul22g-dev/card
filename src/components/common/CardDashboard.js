@@ -86,7 +86,7 @@ const CardDashboard = () => {
                 {
                     headers ?
                         <>
-                            <div className='flex-1 card-view-con p-6'>
+                            <div className='flex-1 card-view-con p-6  overflow-y-scroll h-[calc(100vh-61px)]'>
                                 {loading ? (
                                     <div className="max-w-md mx-auto scale-in">
                                         {/* Card preview skeleton */}
@@ -136,7 +136,7 @@ const CardDashboard = () => {
                                     <Link to={'/card'}>
                                         <button className="mt-5 themeBg text-white rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-200 hover:brightness-90 hover:shadow-lg hover:shadow-[var(--theme-color)]/30 inline-flex items-center gap-2">
                                             <i className="fa-solid fa-plus"></i>
-                                            Create your first card
+                                            Create Card
                                         </button>
                                     </Link>
                                 </div>

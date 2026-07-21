@@ -4,7 +4,7 @@ import brandColors, { platformLabels } from '../../../constants/brandColors';
 
 const CardData = () => {
   const cardData = useSelector(state => state.database.singleData);
-  
+
   // Safely parse card data with error handling
   let jsonData = {};
   let arrData = [];
@@ -67,7 +67,8 @@ const CardData = () => {
 
   // Get initials for avatar
   const initials = (firstName?.charAt(0) || '') + (lastName?.charAt(0) || '') || '?';
-
+  // Card Data in JSON
+  // console.log(JSON.parse(cardData[0].Data));
   return (
     <>
       {/* ══ HERO SECTION — Avatar, Name, Headline ══ */}
@@ -122,9 +123,9 @@ const CardData = () => {
           <div className="card-personal-section-modern">
             {displayFields.map(([key, value]) => {
               const vals = Object.entries(value)
-                .filter(([k, v]) => !metaKeys.includes(k) && v && v !== 'true' && v !== '')
-                .map(([k, v]) => v);
-              if (vals.length === 0) return null;
+              .filter(([k, v]) => !metaKeys.includes(k) && v && v !== 'true' && v !== '')
+              .map(([k, v]) => v);
+              if (vals.length === 0 || key === "__themeColor") return null;
               return (
                 <div key={key} className="card-personal-item-modern card-personal-item-preview">
                   <div className="card-personal-item-icon-wrap">

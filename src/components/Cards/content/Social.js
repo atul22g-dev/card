@@ -4,7 +4,7 @@ import { openModal } from '../../../data/slices/dataSlice';
 import { findCardInon } from '../../func/AllFunc';
 import brandColors, { platformLabels } from '../../../constants/brandColors';
 
-const Social = ({ data, isOpen, details, color, saveData, isSocial }) => {
+const Social = ({ data, isOpen, details, color, isSocial }) => {
     const dispatch = useDispatch();
     const [icon, setIcon] = useState()
     useEffect(() => {
@@ -69,7 +69,6 @@ const Social = ({ data, isOpen, details, color, saveData, isSocial }) => {
 }
 
 const mapStateToProps = state => ({
-    saveData: state.data?.savecardData,
     data: state.data.cardData,
     isOpen: state.data.isOpen,
     color: state.colors.color,

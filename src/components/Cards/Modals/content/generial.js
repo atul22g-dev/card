@@ -61,7 +61,7 @@ export const Social = () => {
                 />
                 <ErrorText message={error} />
             </div>
-            <div>
+            {/* <div>
                 <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
                     Label <span className="text-[var(--text-muted)] font-normal">(Optional)</span>
                 </label>
@@ -75,7 +75,7 @@ export const Social = () => {
                         icon: ficon
                     }))}
                 />
-            </div>
+            </div> */}
         </>
     )
 }

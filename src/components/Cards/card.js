@@ -37,7 +37,7 @@ const Card = ({ loding, colors, fetchColors, Color }) => {
   }, [Color]);
 
   return (
-    <div className="w-[33vw] h-screen card_con_left grid place-content-center max-md:hidden themeLgbg smoot_transition fixed left-0 top-14 bottom-0 right-[60vw] overflow-hidden">
+    <div className="w-[33vw] h-[calc(100vh-61px)] pt-[10rem] pb-[3rem] card_con_left relative grid place-content-center max-md:hidden themeLgbg smoot_transition left-0 top-0 bottom-0 right-[60vw] overflow-hidden scrool-hidden">
       {/* Card */}
       <div className="w-[28vw] max-w-[380px] scale-in">
         <div className="modern-card">

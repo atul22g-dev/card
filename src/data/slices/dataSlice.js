@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-    savecardData: {},
+    savecardData: '',  // Stored as JSON string (matches Appwrite format)
     cardData: {},
     modals: {},
     isDelete: {},
@@ -24,9 +24,10 @@ const dataSlice = createSlice({
             } catch (e) {
                 console.error('Failed to parse saved card data:', e);
                 jsonSingleData = {};
+                singleData = '';
             }
             state.cardData = jsonSingleData;
-            state.savecardData = jsonSingleData;
+            state.savecardData = singleData;  // Store the raw JSON string from Appwrite
         },
         updateCardData(state, action) {
             const { modal, field, value, icon } = action.payload;
@@ -59,18 +60,29 @@ const dataSlice = createSlice({
             state.modals['social'] = false;
             state.isOpen = undefined;
             if (openModal !== 'social') {
-                state.cardData[openModal] = {
-                    ...state.savecardData[openModal]
-                };
+                // Restore cardData from the JSON string in savecardData
+                try {
+                    const saved = state.savecardData ? JSON.parse(state.savecardData) : {};
+                    state.cardData[openModal] = saved[openModal] ? { ...saved[openModal] } : {};
+                } catch (e) {
+                    state.cardData[openModal] = {};
+                }
             }
             state.isSocial = false
         },
         saveData(state, action) {
             const modalName = action.payload;
-            state.savecardData[modalName] = {
-                ...state.cardData[modalName],
-                saveData: 'true'
-            };
+            // Update the JSON string in savecardData
+            try {
+                const saved = state.savecardData ? JSON.parse(state.savecardData) : {};
+                saved[modalName] = {
+                    ...state.cardData[modalName],
+                    saveData: 'true'
+                };
+                state.savecardData = JSON.stringify(saved);
+            } catch (e) {
+                console.error('Failed to save data to JSON string:', e);
+            }
             state.modals['social'] = false;
             state.modals[modalName] = false;
             state.isOpen = null;
@@ -92,9 +104,16 @@ const dataSlice = createSlice({
                 [modal]: itstrue
             }
             state.cardData[modal] = undefined;
-            state.savecardData[modal] = undefined;
+            // Remove from JSON string
+            try {
+                const saved = state.savecardData ? JSON.parse(state.savecardData) : {};
+                delete saved[modal];
+                state.savecardData = Object.keys(saved).length > 0 ? JSON.stringify(saved) : '';
+            } catch (e) {
+                console.error('Failed to remove field from JSON string:', e);
+            }
             state.isDelete = itsDeleteVal;
-            state.modals[modal] = false
+            state.modals[modal] = false;
             state.isOpen = null;
         },
     },

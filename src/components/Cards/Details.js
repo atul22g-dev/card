@@ -59,7 +59,7 @@ const Details = ({ details, fetchDetails, loader, openModal, data, user }) => {
     }, [dispatch, fetchDetails, headers, fetchedId]);
 
     return (
-        <div className='w-[60vw] max-md:w-[100vw] mx-14 my-7 absolute card_con_right left-[33vw] top-14 bottom-0 right-0'>
+        <div className='w-[60vw] max-md:w-[100vw] mx-8 py-7 absolute card_con_right left-[33vw] top-0 bottom-0 right-0 scrool-hidden'>
             {/* Heading */}
             <div className="mb-8 fade-in">
                 <h1 className='text-2xl sm:text-3xl font-bold text-[var(--text-primary)]'>Design Your Card</h1>
@@ -118,12 +118,18 @@ const Details = ({ details, fetchDetails, loader, openModal, data, user }) => {
                     </p>
                     {
                         !headers ? (
-                            <button onClick={() => dbService.AddData(user, data.savecardData,)} className={`${isEmpty(data.cardData) ? 'disable-btn' : 'Primay-btn'} btn min-w-[160px]`} type="button">
+                            <button onClick={() => {
+                                const parsedData = data.savecardData ? JSON.parse(data.savecardData) : {};
+                                dbService.AddData(user, parsedData);
+                            }} className={`${isEmpty(data.cardData) ? 'disable-btn' : 'Primay-btn'} btn min-w-[160px]`} type="button">
                                 <i className="fa-regular fa-floppy-disk mr-2"></i>
                                 Create Card
                             </button>
                         ) : (
-                            <button onClick={() => dbService.updateData(headers, user, data.savecardData)} className={`${isEmpty(data.cardData) ? 'disable-btn' : 'Primay-btn'} btn min-w-[160px]`} type="button">
+                            <button onClick={() => {
+                                const parsedData = data.savecardData ? JSON.parse(data.savecardData) : {};
+                                dbService.updateData(headers, user, parsedData);
+                            }} className={`${isEmpty(data.cardData) ? 'disable-btn' : 'Primay-btn'} btn min-w-[160px]`} type="button">
                                 <i className="fa-regular fa-pen-to-square mr-2"></i>
                                 Update Card
                             </button>
