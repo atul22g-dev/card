@@ -8,6 +8,8 @@ import Login from './components/Auth/Login';
 import Dashboard from './components/dashboard/Dashboard';
 import AuthUser from './components/common/authUser';
 import Logout from './components/Signout';
+import AppwriteHealth from './components/AppwriteHealth';
+import ApiStatus from './components/ApiStatus';
 function App() {
   return (
     <>
@@ -22,6 +24,10 @@ function App() {
         <Route path='/dashboard' element={<AuthUser> <Dashboard /> </AuthUser>} />
         {/* Log out */}
         <Route path='/logout' element={<AuthUser authentication={true}><Logout /></AuthUser>} />
+        {/* Health */}
+        <Route path='/health' element={<AppwriteHealth />} />
+        {/* API Status */}
+        <Route path='/api/status' element={<ApiStatus />} />
         {/*  */}
         <Route path="*" element={<AuthUser authentication={false}> <Login /> </AuthUser>} />
       </Routes>
