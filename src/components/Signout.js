@@ -1,12 +1,17 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { authService } from '../appwrite/auth';
+import { logout } from '../data/slices/authSlice';
 
 const Signout = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const logoutFunc = async () => {
+            // Clear the Redux auth state so no stale user data survives the sign-out
+            dispatch(logout());
             try {
                 await authService.logout();
                 navigate('/');
@@ -15,7 +20,7 @@ const Signout = () => {
             }
         }
         logoutFunc();
-    }, [navigate])
+    }, [navigate, dispatch])
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-[var(--bg-secondary)]">

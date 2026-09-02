@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import CardPrev from '../cardPrev/CardPrev'
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from "react-router-dom";
@@ -16,49 +16,72 @@ const extractCardTitle = (dataStr) => {
     }
 };
 
-const CardDashboard = () => {
+// Skeleton card item for sidebar
+const SidebarSkeletonItem = ({ delay }) => (
+    <div className="flex items-center gap-2.5 px-3 py-2.5 my-1 rounded-lg" style={{ animationDelay: `${delay}s` }}>
+        <div className="w-5 h-5 rounded-md shimmer flex-shrink-0"></div>
+        <div className="h-3.5 w-24 shimmer rounded-md"></div>
+    </div>
+);
 
+const CardDashboard = () => {
 
     const [data, setData] = useState();
     const [loading, setLoading] = useState(true);
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
     const location = useLocation();
     const headers = location.search;
-    const user_ID = useSelector(state => state.auth.userData.$id);
+    const user_ID = useSelector(state => state.auth.userData?.$id);
     const dispatch = useDispatch();
 
     useEffect(() => {
-        const addData = async () => {
-            setLoading(true);
-            let data = await dbService.fetchdata();
-            setData(data)
-            dispatch(storeData(data))
-            setLoading(false);
-        }
-        addData();
+        // AbortController cancels stale work: the cleanup aborts on re-run or
+        // unmount, and the .then/.catch/.finally callbacks bail before
+        // touching state.
+        const controller = new AbortController();
+        setLoading(true);
+        dbService.fetchdata()
+            .then((data) => {
+                if (controller.signal.aborted) return;
+                setData(data);
+                dispatch(storeData(data));
+            })
+            .catch((error) => {
+                if (controller.signal.aborted) return;
+                console.error('Failed to load dashboard data:', error.message);
+            })
+            .finally(() => {
+                // Clear loading on both success and failure, but only for the
+                // current run, so a stale run can't write loading=false over
+                // newer work.
+                if (!controller.signal.aborted) setLoading(false);
+            });
+        return () => controller.abort();
     }, [dispatch])
 
     const filteredCards = data ? data.filter(item => item.UserID === user_ID) : [];
 
-    // Skeleton card item for sidebar
-    const SidebarSkeletonItem = ({ delay }) => (
-        <div className="flex items-center gap-2.5 px-3 py-2.5 my-1 rounded-lg" style={{ animationDelay: `${delay}s` }}>
-            <div className="w-5 h-5 rounded-md shimmer flex-shrink-0"></div>
-            <div className="h-3.5 w-24 shimmer rounded-md"></div>
-        </div>
-    );
+    // Close mobile sidebar when a card is selected
+    useEffect(() => {
+        setMobileSidebarOpen(false);
+    }, [headers]);
 
     return (
         <>
             <div className="card-MainContainer fade-in">
-                <div className="card-sideContainer">
+                {/* Desktop sidebar */}
+                <div className="card-sideContainer hidden md:flex">
                     <div className="header">
                         <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">My Cards</span>
+                        <span className="text-xs text-[var(--text-muted)] bg-[var(--bg-tertiary)] px-2 py-0.5 rounded-full">{filteredCards.length}</span>
                     </div>
-                    <Link to={'/card'} >
-                        <button type="button" className="w-[calc(100%-16px)] mx-2 themeBg text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-all duration-200 hover:brightness-90 hover:shadow-lg hover:shadow-[var(--theme-color)]/20">
-                            <i className="fa-solid fa-plus mr-1.5"></i> New Card
-                        </button>
-                    </Link>
+                    <div className="px-3 pb-2">
+                        <Link to={'/card'}>
+                            <button type="button" className="w-full bg-gradient-to-r from-[var(--theme-color)] to-[color-mix(in_srgb,var(--theme-color)_80%,#6366f1)] text-white font-medium rounded-xl text-sm px-4 py-2.5 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--theme-color)]/30 hover:-translate-y-0.5 active:translate-y-0">
+                                <i className="fa-solid fa-plus mr-1.5"></i> New Card
+                            </button>
+                        </Link>
+                    </div>
                     <div className="mt-2 px-3">
                         {loading ? (
                             <div className="mt-3 space-y-1">
@@ -70,9 +93,9 @@ const CardDashboard = () => {
                         ) : (
                             <ul>
                                 {filteredCards.length > 0 ? (
-                                    filteredCards.map((item, index) => {
+                                    filteredCards.map((item) => {
                                         return (
-                                            <li key={index} className={`rounded-md my-2 ${headers === `?${item.$id}` ? 'active' : ''
+                                            <li key={item.$id} className={`rounded-md my-2 ${headers === `?${item.$id}` ? 'active' : ''
                                                 }`}>
                                                 <Link to={`/dashboard?${item.$id}`}>
                                                     <i className="fa-regular fa-credit-card mr-2 text-[var(--text-muted)]"></i>
@@ -93,10 +116,69 @@ const CardDashboard = () => {
                         )}
                     </div>
                 </div>
+
+                {/* Mobile sidebar — collapsible top bar */}
+                <div className="md:hidden w-full border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
+                    <div className="flex items-center justify-between px-4 h-12">
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">My Cards</span>
+                            <span className="text-[10px] text-[var(--text-muted)] bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded-full">{filteredCards.length}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Link to={'/card'}>
+                                <button type="button" className="text-xs bg-gradient-to-r from-[var(--theme-color)] to-[color-mix(in_srgb,var(--theme-color)_80%,#6366f1)] text-white font-medium rounded-lg px-3 py-1.5 transition-all duration-300 hover:shadow-md hover:shadow-[var(--theme-color)]/25">
+                                    <i className="fa-solid fa-plus mr-1"></i> New
+                                </button>
+                            </Link>
+                            <button
+                                onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+                                className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)] transition-colors"
+                                aria-label="Toggle card list"
+                            >
+                                <svg className={`w-4 h-4 transition-transform duration-200 ${mobileSidebarOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                    <polyline points="6 9 12 15 18 9" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    {mobileSidebarOpen && (
+                        <div className="px-4 pb-3 slide-up">
+                            {loading ? (
+                                <div className="space-y-1">
+                                    <SidebarSkeletonItem delay={0} />
+                                    <SidebarSkeletonItem delay={0.06} />
+                                </div>
+                            ) : filteredCards.length > 0 ? (
+                                <div className="flex flex-col gap-1">
+                                    {filteredCards.map((item) => (
+                                        <Link
+                                            key={item.$id}
+                                            to={`/dashboard?${item.$id}`}
+                                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                                                headers === `?${item.$id}`
+                                                    ? 'bg-[var(--light-theme-color)] text-[var(--theme-color)] font-medium'
+                                                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
+                                            }`}
+                                        >
+                                            <i className="fa-regular fa-credit-card text-xs text-[var(--text-muted)]"></i>
+                                            <span className="truncate">{(item.Data ? extractCardTitle(item.Data) : null) || 'Untitled Card'}</span>
+                                        </Link>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-4 text-[var(--text-muted)] text-xs">
+                                    <i className="fa-regular fa-credit-card mr-1.5"></i>
+                                    No cards yet
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
                 {
                     headers ?
                         <>
-                            <div className='flex-1 card-view-con p-6  overflow-y-scroll h-[calc(100vh-61px)]'>
+                            <div className='flex-1 card-view-con p-4 sm:p-6 overflow-y-scroll h-[calc(100vh-56px)]'>
                                 {loading ? (
                                     <div className="max-w-md mx-auto scale-in">
                                         {/* Card preview skeleton */}
@@ -136,15 +218,15 @@ const CardDashboard = () => {
                                 )}
                             </div>
                         </> : (
-                            <div className='flex-1 flex items-center justify-center text-[var(--text-muted)]'>
-                                <div className="text-center">
-                                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl themeLgbg mb-5">
-                                        <i className="fa-regular fa-credit-card text-3xl textTheme"></i>
+                            <div className='flex-1 flex items-center justify-center text-[var(--text-muted)] px-4'>
+                                <div className="text-center scale-in">
+                                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-[var(--theme-color)] to-[color-mix(in_srgb,var(--theme-color)_70%,#6366f1)] mb-5 shadow-xl shadow-[var(--theme-color)]/20">
+                                        <i className="fa-regular fa-credit-card text-3xl text-white"></i>
                                     </div>
-                                    <p className="text-lg font-semibold text-[var(--text-primary)]">Select a card to preview</p>
-                                    <p className="text-sm text-[var(--text-muted)] mt-1">Choose a card from the sidebar or create a new one</p>
+                                    <p className="text-xl font-bold text-[var(--text-primary)] tracking-tight">Select a card to preview</p>
+                                    <p className="text-sm text-[var(--text-muted)] mt-2 max-w-[280px] mx-auto">Choose a card from the sidebar or create a new one to get started</p>
                                     <Link to={'/card'}>
-                                        <button className="mt-5 themeBg text-white rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-200 hover:brightness-90 hover:shadow-lg hover:shadow-[var(--theme-color)]/30 inline-flex items-center gap-2">
+                                        <button className="mt-6 bg-gradient-to-r from-[var(--theme-color)] to-[color-mix(in_srgb,var(--theme-color)_80%,#6366f1)] text-white rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-300 hover:shadow-xl hover:shadow-[var(--theme-color)]/30 hover:-translate-y-0.5 inline-flex items-center gap-2">
                                             <i className="fa-solid fa-plus"></i>
                                             Create Card
                                         </button>

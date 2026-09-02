@@ -33,8 +33,11 @@ function authHeaders() {
 async function fetchHealth(path) {
     try {
         const res = await fetch(`${baseUrl}${path}`, { headers: authHeaders() });
-        const body = await res.json().catch(() => null);
-        return { ok: res.ok, data: body, status: res.status };
+        if (!res.ok) {
+            return { ok: false, data: null, status: res.status };
+        }
+        const data = await res.json().catch(() => null);
+        return { ok: true, data, status: res.status };
     } catch {
         return { ok: false, data: null, status: 0 };
     }
@@ -120,14 +123,12 @@ async function getStatus() {
     try {
         const collectionsRes = await databases.listCollections(REACT_APP_APPWRITE_DATABASE_ID);
         response.data.collections = collectionsRes.total || 0;
-        let totalDocuments = 0;
-        for (const collection of collectionsRes.collections || []) {
-            try {
-                const docs = await databases.listDocuments(REACT_APP_APPWRITE_DATABASE_ID, collection.$id, [], 1);
-                totalDocuments += docs.total || 0;
-            } catch { /* skip */ }
-        }
-        response.data.documents = totalDocuments;
+        const results = await Promise.allSettled(
+            (collectionsRes.collections || []).map(collection =>
+                databases.listDocuments(REACT_APP_APPWRITE_DATABASE_ID, collection.$id, [], 1)
+            )
+        );
+        response.data.documents = results.reduce((sum, r) => sum + (r.status === 'fulfilled' ? (r.value.total || 0) : 0), 0);
     } catch {
         try {
             const docs = await databases.listDocuments(REACT_APP_APPWRITE_DATABASE_ID, REACT_APP_APPWRITE_COLLECTION_ID);

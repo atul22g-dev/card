@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { fetchColors, setCurrentColor } from '../../data/slices/colors';
 import { useDispatch } from 'react-redux';
@@ -20,7 +20,7 @@ const colorNames = {
   '172, 185, 190': 'Gray',
 };
 
-const Card = ({ loding, colors, fetchColors, Color }) => {
+const Card = ({ loading, colors, fetchColors, Color }) => {
   const dispatch = useDispatch();
   const [hoveredColor, setHoveredColor] = useState(null);
 
@@ -37,32 +37,35 @@ const Card = ({ loding, colors, fetchColors, Color }) => {
   }, [Color]);
 
   return (
-    <div className="w-[28vw] h-[calc(100vh-61px)] card_con_left relative flex flex-col items-center pt-6 max-md:hidden themeLgbg smoot_transition left-0 top-0 bottom-0 right-[60vw] scrool-hidden overflow-hidden">
+    <div className="w-full md:w-[28vw] md:min-w-[300px] md:max-w-[420px] h-auto md:h-[calc(100vh-56px)] card_con_left relative flex flex-col items-center pt-8 themeLgbg smoot_transition md:left-0 md:top-0 md:bottom-0 md:right-0 scrool-hidden overflow-hidden flex-shrink-0">
       {/* Card */}
-      <div className="w-[28vw] max-w-[380px] scale-in flex-shrink-0">
+      <div className="w-full max-w-[380px] scale-in flex-shrink-0 px-4 md:px-0">
         <div className="modern-card">
           {/* Card Header */}
           <div className="card-header-modern" style={{ minHeight: '140px' }}>
             <div className="card-header-deco card-header-deco-1"></div>
             <div className="card-header-deco card-header-deco-2"></div>
             <div className="card-header-deco card-header-deco-3"></div>
+            {/* Subtle shimmer overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" style={{ animationDuration: '3s' }}></div>
           </div>
 
           {/* Card Body */}
-          <div className="card-body-modern min-h-[20rem]">
+          <div className="card-body-modern min-h-[20rem] relative">
             <Personal />
             <Social />
           </div>
         </div>
       </div>
       {/* Colors Section */}
-      <div className="w-[28vw] max-w-[380px] color-picker-section flex-shrink-0 pb-6 mt-[2rem]">
+      <div className="w-full max-w-[380px] color-picker-section flex-shrink-0 pb-6 mt-[2rem] px-4 md:px-0">
+        <div className="bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-color)] p-4 shadow-[var(--shadow-sm)]">
         <h3 className="color-picker-title">
           <i className="fa-regular fa-palette mr-1.5"></i>
           Theme Colors
         </h3>
         <div className="color-picker-grid">
-          {!loding && colors.map(color => (
+          {!loading && colors.map(color => (
             <div key={color.id} className="relative">
               <button
                 onClick={() => dispatch(setCurrentColor(color.color))}
@@ -82,6 +85,7 @@ const Card = ({ loding, colors, fetchColors, Color }) => {
             </div>
           ))}
         </div>
+        </div>
       </div>
     </div>
   );
@@ -90,7 +94,7 @@ const Card = ({ loding, colors, fetchColors, Color }) => {
 const mapStateToProps = state => ({
   colors: state.colors.colors,
   Color: state.colors.color,
-  loding: state.colors.loading
+  loading: state.colors.loading
 });
 
 export default connect(mapStateToProps, { fetchColors })(Card);

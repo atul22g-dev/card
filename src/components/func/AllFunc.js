@@ -1,13 +1,13 @@
 import { toast } from 'react-toastify';
-import { authService } from '../../appwrite/auth';
 
 // Find Social Icon
-export const findCardInon = (details, isOpen) => {
+export const findCardIcon = (details, isOpen) => {
     for (let i = 0; i < details.length; i++) {
         if (details[i].openModal === 'social' && details[i].socialName === isOpen) {
-            return details[i].icon
-        } else { }
+            return details[i].icon;
+        }
     }
+    return null;
 }
 
 // Find Object is empty or not 
@@ -50,11 +50,4 @@ export const handleErrors = (errors) => {
 
 export const handleSuccess = (success) => {
     toast.success(success, toastcss);
-}
-
-
-//  get User Data
-export const getData = async () => {
-    return await authService.getCurrentUser()
-
 }

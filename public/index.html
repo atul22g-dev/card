@@ -3,26 +3,39 @@
 
 <head>
   <meta charset="utf-8" />
-  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#000000" />
-  <meta name="description" content="Web site created using create-react-app" />
-  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" sizes="48x48" />
+  <link rel="icon" type="image/svg+xml" href="%PUBLIC_URL%/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#4f46e5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0f1629" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="CardCraft — Design beautiful digital business cards. Create, customize, and share your professional card in minutes." />
+  <meta name="keywords" content="digital business card, online business card, vcard, QR code card, professional card" />
+  <meta name="author" content="CardCraft" />
+  <meta name="robots" content="index, follow" />
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="CardCraft — Digital Business Cards" />
+  <meta property="og:description" content="Design beautiful digital business cards. Create, customize, and share your professional card in minutes." />
+  <meta property="og:image" content="%PUBLIC_URL%/og-image.png" />
+  <meta property="og:url" content="%PUBLIC_URL%" />
+  <meta property="og:site_name" content="CardCraft" />
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="CardCraft — Digital Business Cards" />
+  <meta name="twitter:description" content="Design beautiful digital business cards. Create, customize, and share your professional card in minutes." />
+  <!-- Content Security Policy -->
+  <!-- frame-ancestors is intentionally NOT here: browsers ignore it in a <meta>
+       CSP and log a console warning. It is enforced via the Content-Security-Policy
+       HTTP header set in vercel.json for production. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.appwrite.io https://cloud.appwrite.io https://appwrite-card.161.118.182.103.sslip.io; base-uri 'self'; form-action 'self'" />
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="apple-touch-icon" href="%PUBLIC_URL%/apple-touch-icon.png" />
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-  <!-- <link rel="stylesheet" href="https://atugatran.github.io/FontAwesome6Pro/css/all.min.css"> -->
-  <title>Card - Atul22G</title>
-  <script type="text/javascript">
-    (function (l) {
-      if (l.search[1] === '/') {
-        var decoded = l.search.slice(1).split('&').map(function (s) {
-          return s.replace(/~and~/g, '&')
-        }).join('?');
-        window.history.replaceState(null, null,
-          l.pathname.slice(0, -1) + decoded + l.hash
-        );
-      }
-    }(window.location))
-  </script>
+  <title>CardCraft — Digital Business Cards</title>
 </head>
 
 <body>

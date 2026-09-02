@@ -1,13 +1,8 @@
 import conf from './config';
-import { Client, Databases } from "appwrite";
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
 
 const baseUrl = conf.appwriteUrl.replace(/\/+$/, '');
-const client = new Client()
-    .setEndpoint(conf.appwriteUrl)
-    .setProject(conf.appwriteProjectId);
-const databases = new Databases(client);
 
 /**
  * Result of a fetchHealth call
@@ -19,14 +14,9 @@ const databases = new Databases(client);
  * Includes the API key if configured.
  */
 function authHeaders() {
-    const headers = {
+    return {
         'X-Appwrite-Response-Format': '1.0.0',
     };
-    if (conf.appwriteApiKey) {
-        headers['X-Appwrite-Key'] = conf.appwriteApiKey;
-        headers['X-Appwrite-Project'] = conf.appwriteProjectId;
-    }
-    return headers;
 }
 
 /**
@@ -39,13 +29,23 @@ async function fetchHealth(path) {
         const res = await fetch(`${baseUrl}${path}`, {
             headers: authHeaders(),
         });
-        const body = await res.json().catch(() => null);
+        if (!res.ok) {
+            const errorBody = await res.json().catch(() => null);
+            return {
+                ok: false,
+                data: errorBody,
+                status: res.status,
+                statusText: res.statusText,
+                error: errorBody?.message || res.statusText,
+            };
+        }
+        const data = await res.json().catch(() => null);
         return {
-            ok: res.ok,
-            data: body,
+            ok: true,
+            data,
             status: res.status,
             statusText: res.statusText,
-            error: res.ok ? null : (body?.message || res.statusText),
+            error: null,
         };
     } catch (err) {
         return {
@@ -285,35 +285,37 @@ export class StatusService {
             response.data.uptime_hours = (offset / 3600).toFixed(2);
         }
 
-        // --- Collections & documents via SDK ---
+        // --- Collections & documents via raw fetch (with API key auth) ---
         try {
-            const collectionsRes = await databases.listCollections(conf.appwriteDatabaseId);
-            response.data.collections = collectionsRes.total || 0;
+            const collectionsUrl = `${baseUrl}/databases/${conf.appwriteDatabaseId}/collections`;
+            const collectionsRes = await fetch(collectionsUrl, {
+                headers: authHeaders(),
+            });
+            if (collectionsRes.ok) {
+                const collectionsData = await collectionsRes.json();
+                response.data.collections = collectionsData.total || 0;
 
-            let totalDocuments = 0;
-            for (const collection of collectionsRes.collections || []) {
-                try {
-                    const docs = await databases.listDocuments(
-                        conf.appwriteDatabaseId,
-                        collection.$id,
-                        [],
-                        1
-                    );
-                    totalDocuments += docs.total || 0;
-                } catch {
-                    // Skip inaccessible collections
-                }
+                const results = await Promise.allSettled(
+                    (collectionsData.collections || []).map(async collection => {
+                        const docsUrl = `${collectionsUrl}/${collection.$id}/documents?limit=1`;
+                        const docsRes = await fetch(docsUrl, { headers: authHeaders() });
+                        if (!docsRes.ok) return 0;
+                        const docsData = await docsRes.json();
+                        return docsData.total || 0;
+                    })
+                );
+                response.data.documents = results.reduce((sum, r) => sum + (r.status === 'fulfilled' ? r.value : 0), 0);
             }
-            response.data.documents = totalDocuments;
         } catch {
             // Fallback: try the known collection
             try {
-                const docs = await databases.listDocuments(
-                    conf.appwriteDatabaseId,
-                    conf.appwriteCollectionId
-                );
-                response.data.documents = docs.total || 0;
-                response.data.collections = 1;
+                const docsUrl = `${baseUrl}/databases/${conf.appwriteDatabaseId}/collections/${conf.appwriteCollectionId}/documents`;
+                const docsRes = await fetch(docsUrl, { headers: authHeaders() });
+                if (docsRes.ok) {
+                    const docsData = await docsRes.json();
+                    response.data.documents = docsData.total || 0;
+                    response.data.collections = 1;
+                }
             } catch {
                 // No collection access
             }
@@ -321,17 +323,18 @@ export class StatusService {
 
         // --- Data size estimate ---
         try {
-            const docs = await databases.listDocuments(
-                conf.appwriteDatabaseId,
-                conf.appwriteCollectionId
-            );
-            if (docs?.documents) {
-                const totalBytes = docs.documents.reduce((acc, doc) => {
-                    return acc + new Blob([JSON.stringify(doc)]).size;
-                }, 0);
-                response.data.data_size = (totalBytes / (1024 * 1024)).toFixed(2) + ' MB';
-                const storageEstimate = totalBytes * 1.5;
-                response.data.storage_size = (storageEstimate / (1024 * 1024)).toFixed(2) + ' MB';
+            const docsUrl = `${baseUrl}/databases/${conf.appwriteDatabaseId}/collections/${conf.appwriteCollectionId}/documents`;
+            const docsRes = await fetch(docsUrl, { headers: authHeaders() });
+            if (docsRes.ok) {
+                const docsData = await docsRes.json();
+                if (docsData?.documents) {
+                    const totalBytes = docsData.documents.reduce((acc, doc) => {
+                        return acc + new Blob([JSON.stringify(doc)]).size;
+                    }, 0);
+                    response.data.data_size = (totalBytes / (1024 * 1024)).toFixed(2) + ' MB';
+                    const storageEstimate = totalBytes * 1.5;
+                    response.data.storage_size = (storageEstimate / (1024 * 1024)).toFixed(2) + ' MB';
+                }
             }
         } catch {
             // Estimate not available

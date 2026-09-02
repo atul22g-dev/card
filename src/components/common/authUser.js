@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import {authService} from '../../appwrite/auth';
@@ -9,19 +9,25 @@ export const AuthUser = ({ children, authentication = true }) => {
     const navigate = useNavigate()
     const [loader, setLoader] = useState(true)
     useEffect(() => {
+        let ignore = false;
         const getUser = async () => {
             try {
                 const userData = await authService.getCurrentUser()
+                if (ignore) return;
                 dispatch(login(userData))
                 if (userData == null && authentication) {
                     navigate("/signup")
                 }
                 setLoader(false)
             } catch (error) {
-                console.error('Auth check failed:', error);
+                if (!ignore) {
+                    console.error('Auth check failed:', error);
+                    setLoader(false);
+                }
             }
         }
         getUser()
+        return () => { ignore = true; };
     }, [authentication, dispatch, navigate])
 
     return (

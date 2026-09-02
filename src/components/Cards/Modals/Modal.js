@@ -1,9 +1,10 @@
-import React from 'react'
+
 import { useSelector, useDispatch } from 'react-redux';
 import { closeModal, saveData, openDeleteModal, removeField } from '../../../data/slices/dataSlice';
 import * as personal from './content/personal';
 import * as generial from './content/generial';
 import DeleteModal from '../../common/DeleteModal';
+import ModalShell from '../../common/ModalShell';
 
 /**
  * Modal — field editor overlay.
@@ -43,73 +44,66 @@ const Modal = () => {
 
             {/* Field editor modal */}
             {(isOpen && !isDelete[isOpen]) && (
-                <>
+                <ModalShell isOpen onClose={() => dispatch(closeModal(isOpen))}>
                     <div
-                        className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none"
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && hasContent) {
                                 dispatch(saveData(isOpen));
                             }
-                            if (e.key === 'Escape') dispatch(closeModal(isOpen));
                         }}
                     >
-                        <div className="relative w-auto my-6 mx-4 sm:mx-auto sm:max-w-lg scale-in">
-                            <div className="border-0 rounded-2xl shadow-xl relative flex flex-col w-full bg-[var(--bg-primary)] outline-none focus:outline-none">
-                                {/* Header */}
-                                <div className="flex items-center justify-between px-5 sm:px-8 pt-6 sm:pt-8 pb-2">
-                                    <h3 className="text-lg font-semibold text-[var(--text-primary)] capitalize">
-                                        {isOpen === 'social' ? 'Social Link' : isOpen.replace(/([A-Z])/g, ' $1').trim()}
-                                    </h3>
-                                    <button
-                                        onClick={() => dispatch(closeModal(isOpen))}
-                                        className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200"
-                                        aria-label="Close modal"
-                                    >
-                                        <i className="fa-regular fa-xmark text-lg"></i>
-                                    </button>
-                                </div>
-                                {/* Body — dynamically rendered field inputs */}
-                                <div className="px-5 sm:px-8 py-5 sm:py-6 flex flex-col gap-5">
-                                    {modals.name && <personal.Name />}
-                                    {modals.jobTitle && <personal.JobTitle />}
-                                    {modals.department && <personal.Department />}
-                                    {modals.company && <personal.Company />}
-                                    {modals.headline && <personal.Headline />}
-                                    {modals.social && <generial.Social />}
-                                </div>
-                                {/* Footer */}
-                                <div className="flex flex-col sm:flex-row items-center justify-between px-5 sm:px-8 py-4 sm:py-5 border-t border-[var(--border-color)] gap-3">
-                                    <button
-                                        onClick={() => dispatch(openDeleteModal({ modal: isOpen, itstrue: true }))}
-                                        className="px-3 py-2 rounded-lg text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-200 flex items-center gap-2"
-                                    >
-                                        <i className="fa-regular fa-trash-can"></i>
-                                        Remove
-                                    </button>
-                                    <div className='flex items-center gap-2 sm:gap-3 w-full sm:w-auto'>
-                                        <button
-                                            className="flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-xl text-sm font-medium text-[var(--text-secondary)] border border-[var(--border-color)] bg-[var(--bg-primary)] hover:bg-[var(--bg-tertiary)] transition-all duration-200"
-                                            type="button"
-                                            onClick={() => dispatch(closeModal(isOpen))}
-                                        >Close</button>
-                                        <button
-                                            onClick={!hasContent ? null : () => dispatch(saveData(isOpen))}
-                                            className={`flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                                                hasContent
-                                                    ? 'themeBg text-white hover:brightness-90 hover:shadow-lg hover:shadow-[var(--theme-color)]/30'
-                                                    : 'border border-[var(--btn-disable-color)] text-[var(--btn-disable-color)] cursor-not-allowed'
-                                            }`}
-                                        >
-                                            <i className="fa-regular fa-check mr-2"></i>
-                                            Save
-                                        </button>
-                                    </div>
-                                </div>
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-4 sm:px-8 pt-5 sm:pt-8 pb-2">
+                            <h3 className="text-lg font-semibold text-[var(--text-primary)] capitalize">
+                                {isOpen === 'social' ? 'Social Link' : isOpen.replace(/([A-Z])/g, ' $1').trim()}
+                            </h3>
+                            <button
+                                onClick={() => dispatch(closeModal(isOpen))}
+                                className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200"
+                                aria-label="Close modal"
+                            >
+                                <i className="fa-regular fa-xmark text-lg"></i>
+                            </button>
+                        </div>
+                        {/* Body — dynamically rendered field inputs */}
+                        <div className="px-4 sm:px-8 py-4 sm:py-6 flex flex-col gap-4 sm:gap-5">
+                            {modals.name && <personal.Name />}
+                            {modals.jobTitle && <personal.JobTitle />}
+                            {modals.department && <personal.Department />}
+                            {modals.company && <personal.Company />}
+                            {modals.headline && <personal.Headline />}
+                            {modals.social && <generial.Social />}
+                        </div>
+                        {/* Footer */}
+                        <div className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-8 py-3 sm:py-5 border-t border-[var(--border-color)] gap-3">
+                            <button
+                                onClick={() => dispatch(openDeleteModal({ modal: isOpen, itstrue: true }))}
+                                className="px-3 py-2 rounded-lg text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-200 flex items-center gap-2"
+                            >
+                                <i className="fa-regular fa-trash-can"></i>
+                                Remove
+                            </button>
+                            <div className='flex items-center gap-2 sm:gap-3 w-full sm:w-auto'>
+                                <button
+                                    className="flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-xl text-sm font-medium text-[var(--text-secondary)] border border-[var(--border-color)] bg-[var(--bg-primary)] hover:bg-[var(--bg-tertiary)] transition-all duration-200"
+                                    type="button"
+                                    onClick={() => dispatch(closeModal(isOpen))}
+                                >Close</button>
+                                <button
+                                    onClick={!hasContent ? null : () => dispatch(saveData(isOpen))}
+                                    className={`flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                                        hasContent
+                                            ? 'themeBg text-white hover:brightness-90 hover:shadow-lg hover:shadow-[var(--theme-color)]/30'
+                                            : 'border border-[var(--btn-disable-color)] text-[var(--btn-disable-color)] cursor-not-allowed'
+                                    }`}
+                                >
+                                    <i className="fa-regular fa-check mr-2"></i>
+                                    Save
+                                </button>
                             </div>
                         </div>
                     </div>
-                    <div className="modal-backdrop opacity-25 fixed inset-0 z-40 bg-black backdrop-blur-sm"></div>
-                </>
+                </ModalShell>
             )}
         </>
     )

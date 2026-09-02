@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react'
+import {useEffect} from 'react'
 import Card from './card'
 import CardText from './Details'
 import Modal from './Modals/Modal'
@@ -13,7 +13,7 @@ const Main = () => {
         <>
         <Navbar />
         {/* Card Container */}
-        <div className='relative w-full h-[calc(100vh-56px)] card_con'>
+        <div className='relative w-full h-auto md:h-[calc(100vh-56px)] card_con flex flex-col md:flex-row overflow-y-auto md:overflow-hidden'>
         {/* Card */}
         <Card/>
         {/* Card Text */}

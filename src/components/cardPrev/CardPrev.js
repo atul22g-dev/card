@@ -1,10 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import CardData from './content/CardData'
 import { useDispatch, useSelector } from 'react-redux';
 import { storeSingleData } from '../../data/slices/databaseSlice';
 import { restoreThemeColor } from '../../data/slices/colors';
-import { useLocation } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { dbService } from '../../appwrite/auth';
 import DeleteModal from '../common/DeleteModal';
 
@@ -25,12 +24,12 @@ const CardPrev = () => {
             window.location.reload();
         } catch (error) {
             console.error('Delete failed:', error);
+        } finally {
             setDeleting(false);
             setShowDeleteModal(false);
         }
     }
 
-    const EditBtnFunc = (id) => navigate("/card?" + id)
 
     useEffect(() => {
         const headers = location.search;
@@ -39,21 +38,36 @@ const CardPrev = () => {
         if (lastFetchedId.current === currentId) return;
         lastFetchedId.current = currentId;
 
-        const addOneData = async () => {
-            setLoading(true);
-            let data = await dbService.fetchOnedata(headers);
-            dispatch(storeSingleData(data));
-            if (data && data[0] && data[0].Data) {
-                try {
-                    const savedData = JSON.parse(data[0].Data);
-                    if (savedData.__themeColor) {
-                        dispatch(restoreThemeColor(savedData.__themeColor));
-                    }
-                } catch (e) { }
-            }
-            setLoading(false);
-        }
-        addOneData()
+        // AbortController cancels stale runs: when the effect re-runs (a
+        // different card selected) or the component unmounts, the cleanup
+        // aborts and the in-flight .then/.catch/.finally callbacks bail
+        // before touching state.
+        const controller = new AbortController();
+        setLoading(true);
+        dbService.fetchOnedata(headers)
+            .then((data) => {
+                if (controller.signal.aborted) return;
+                dispatch(storeSingleData(data));
+                if (data && data[0] && data[0].Data) {
+                    try {
+                        const savedData = JSON.parse(data[0].Data);
+                        if (savedData.__themeColor) {
+                            dispatch(restoreThemeColor(savedData.__themeColor));
+                        }
+                    } catch (e) { }
+                }
+            })
+            .catch((error) => {
+                if (controller.signal.aborted) return;
+                console.error('Failed to load card:', error);
+            })
+            .finally(() => {
+                // Clear loading on both success and failure, but only for the
+                // current run — a stale fetch must not hide the newer card's
+                // loading skeleton.
+                if (!controller.signal.aborted) setLoading(false);
+            });
+        return () => controller.abort();
     }, [location, dispatch])
 
     if (loading) {
@@ -110,7 +124,7 @@ const CardPrev = () => {
 
                     {/* Header Actions */}
                     <div className="card-header-actions">
-                        <button onClick={() => EditBtnFunc(id)} className="card-header-btn edit-btn" title="Edit Card">
+                        <button onClick={() => navigate('/card?' + id)} className="card-header-btn edit-btn" title="Edit Card">
                             <i className="fa-solid fa-pen-to-square"></i>
                         </button>
                         <button onClick={() => setShowDeleteModal(true)} className="card-header-btn delete-btn" title="Delete Card">

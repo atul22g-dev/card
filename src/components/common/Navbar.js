@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from "react-router-dom";
 import ThemeToggle from './ThemeToggle';
 import NavLinkItem from './NavLinkItem';
@@ -10,8 +10,8 @@ const Navbar = () => {
     const closeMobile = () => setMobileOpen(false);
 
     return (
-        <header className="fixed min-w-[100vw] bg-white dark:bg-[var(--bg-primary)] border-b border-[var(--border-color)] shadow-sm top-0 z-50 transition-colors duration-300">
-            <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 py-3">
+        <header className="fixed min-w-[100vw] bg-white/80 dark:bg-[#0a0f1e] backdrop-blur-2xl dark:backdrop-blur-2xl border-b border-[var(--border-color)]/60 dark:border-[var(--border-color)]/40 shadow-sm dark:shadow-[0_1px_0_0_rgba(var(--theme-color-rgb),0.04),0_4px_24px_-4px_rgba(0,0,0,0.5)] top-0 z-50 transition-all duration-300">
+            <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 h-[56px]">
                 <Link to={'/dashboard'} className="flex items-center gap-2.5 text-[var(--text-primary)] hover:opacity-80 transition-opacity">
                     <div className="w-8 h-8 rounded-lg themeBg flex items-center justify-center">
                         <i className="fa-solid fa-address-card text-white text-sm"></i>
@@ -52,7 +52,7 @@ const Navbar = () => {
             </div>
 
             {mobileOpen && (
-                <div className="sm:hidden border-t border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 space-y-2 slide-up">
+                <div className="sm:hidden border-t border-[var(--border-color)] bg-[var(--bg-tertiary)] dark:bg-[#0a0f1e] dark:border-[var(--border-color)]/40 backdrop-blur-xl px-4 py-3 space-y-2 slide-up">
                     <div className="flex flex-col gap-1">
                         <NavLinkItem to="/dashboard" isActive={isActive('/dashboard')} onClick={closeMobile}>
                             <i className="fa-regular fa-grid-2 mr-3 w-5 text-center"></i>Dashboard

@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { connect, useDispatch } from 'react-redux';
 import { openModal } from '../../../data/slices/dataSlice';
-import { findCardInon } from '../../func/AllFunc';
+import { findCardIcon } from '../../func/AllFunc';
 import brandColors, { platformLabels } from '../../../constants/brandColors';
 
 const Social = ({ data, isOpen, details, color, isSocial }) => {
     const dispatch = useDispatch();
     const [icon, setIcon] = useState()
     useEffect(() => {
-        let ficon = findCardInon(details, isOpen)
+        let ficon = findCardIcon(details, isOpen)
         setIcon(ficon)
     }, [details, isOpen])
 
@@ -22,9 +22,9 @@ const Social = ({ data, isOpen, details, color, isSocial }) => {
                 const platformName = platformLabels[key] || key.charAt(0).toUpperCase() + key.slice(1);
 
                 return (
-                    <div key={key} 
+                    <button type="button" key={key} 
                          onClick={() => dispatch(openModal({ openModal: 'social', name: key }))} 
-                         className="card-social-item-modern"
+                         className="card-social-item-modern w-full text-left"
                          style={brandColor ? { '--social-brand': brandColor } : { '--social-brand': `rgb(${color})` }}
                     >
                         <div className="card-social-item-bg"></div>
@@ -41,7 +41,7 @@ const Social = ({ data, isOpen, details, color, isSocial }) => {
                         <div className="card-social-item-arrow">
                             <i className="fa-regular fa-pen"></i>
                         </div>
-                    </div>
+                    </button>
                 );
             })}
 

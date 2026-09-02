@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import healthService from '../appwrite/health';
 import conf from '../appwrite/config';
@@ -108,6 +108,177 @@ const HealthSkeleton = () => (
     </div>
 );
 
+/**
+ * Scope restriction warning with fallback service status chips.
+ * Shown when the Appwrite health API requires a scope that isn't granted to guests.
+ */
+const ScopeRestrictedContent = ({ scopeMessage }) => (
+    <div className="space-y-5">
+        <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'rgba(245, 158, 11, 0.3)' }}>
+            <div className="bg-gradient-to-r from-amber-500 to-yellow-600 px-5 py-3 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
+                    <i className="fa-solid fa-shield-halved text-white"></i>
+                </div>
+                <div>
+                    <p className="text-sm font-semibold text-white">Health API Scope Restricted</p>
+                    <p className="text-xs text-white/80">Server is reachable but health data is limited</p>
+                </div>
+            </div>
+            <div className="px-5 py-4" style={{ backgroundColor: 'var(--bg-primary)' }}>
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                    {scopeMessage}
+                </p>
+                <div
+                    className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg text-xs"
+                    style={{
+                        backgroundColor: 'rgba(245, 158, 11, 0.08)',
+                        color: '#d97706',
+                    }}
+                >
+                    <i className="fa-solid fa-lightbulb"></i>
+                    <span>
+                        <strong>Suggestion:</strong> Go to Appwrite Console → Auth → Settings →
+                        {' '}Allowed Scopes and add <code className="font-mono bg-amber-500/10 px-1 rounded">health.read</code>
+                        {' '}for guest users, or create an API key with that scope.
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div className="space-y-3">
+            <ServiceChip name="Server (reachable)" status="pass" icon="fa-server" />
+            <ServiceChip name="Database" status="fail" icon="fa-database" />
+            <ServiceChip name="Cache" status="fail" icon="fa-gauge-high" />
+            <ServiceChip name="Server Time Sync" status="fail" icon="fa-clock" />
+        </div>
+    </div>
+);
+
+/**
+ * Connection error display.
+ */
+const ErrorContent = ({ error }) => (
+    <div className="text-center py-6">
+        <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+            style={{
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                color: '#ef4444',
+            }}
+        >
+            <i className="fa-solid fa-bolt text-2xl"></i>
+        </div>
+        <p className="text-sm font-medium text-[var(--text-primary)] mb-1">
+            Connection Error
+        </p>
+        <p className="text-xs text-[var(--text-muted)] max-w-xs mx-auto">
+            {error}
+        </p>
+    </div>
+);
+
+/**
+ * Service config: maps a health data key to its display properties.
+ * For 'server', status is derived from the top-level healthData.status.
+ */
+const SERVICE_CONFIGS = [
+    { key: 'server', name: 'Server', icon: 'fa-server',
+      getStatus: (d) => d.status === 'up' ? 'pass' : 'fail',
+      getDetail: () => null },
+    { key: 'database', name: 'Database', icon: 'fa-database',
+      getStatus: (d) => d.status,
+      getDetail: (d) => d.message || d.description || d.error },
+    { key: 'cache', name: 'Cache', icon: 'fa-gauge-high',
+      getStatus: (d) => d.status,
+      getDetail: (d) => d.message || d.description || d.error },
+    { key: 'time', name: 'Server Time Sync', icon: 'fa-clock',
+      getStatus: (d) => d.remoteTime ? 'pass' : (d.status || 'fail'),
+      getDetail: (d) => d.message || d.description || d.error },
+];
+
+/**
+ * Services grid showing server, database, cache, and time sync status.
+ */
+const HealthServicesContent = ({ healthData }) => (
+    <div className="space-y-3">
+        {SERVICE_CONFIGS.map(({ key, name, icon, getStatus, getDetail }) => {
+            const svc = key === 'server' ? healthData : healthData?.[key];
+            if (!svc) return null;
+            return (
+                <ServiceChip
+                    key={key}
+                    name={name}
+                    status={getStatus(svc)}
+                    detail={getDetail(svc)}
+                    icon={icon}
+                />
+            );
+        })}
+
+        {healthData?.time?.offset !== undefined && healthData.time.remoteTime && (
+            <div
+                className="flex items-center justify-between px-4 py-2.5 rounded-xl text-xs"
+                style={{
+                    backgroundColor: 'var(--bg-tertiary)',
+                    color: 'var(--text-muted)',
+                }}
+            >
+                <span>Time offset</span>
+                <span className="font-mono font-medium text-[var(--text-secondary)]">
+                    {healthData.time.offset >= 0 ? '+' : ''}
+                    {healthData.time.offset}ms
+                </span>
+            </div>
+        )}
+    </div>
+);
+
+/**
+ * Refresh and Open Console action buttons.
+ */
+const ActionButtons = ({ refreshing, onRefresh }) => (
+    <div className="flex items-center gap-3 pt-1">
+        <button
+            onClick={onRefresh}
+            disabled={refreshing}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 disabled:opacity-50"
+            style={{
+                backgroundColor: 'var(--light-theme-color)',
+                color: 'var(--theme-color)',
+            }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--light-theme-color-hover)';
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--light-theme-color)';
+            }}
+        >
+            <i className={`fa-solid fa-rotate ${refreshing ? 'animate-spin' : ''}`}></i>
+            {refreshing ? 'Refreshing...' : 'Refresh Status'}
+        </button>
+        <a
+            href={conf.appwriteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+            style={{
+                backgroundColor: 'var(--bg-tertiary)',
+                color: 'var(--text-secondary)',
+                border: '1px solid var(--border-color)',
+            }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--dark-box-color)';
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
+            }}
+        >
+            <i className="fa-solid fa-external-link"></i>
+            Open Console
+        </a>
+    </div>
+);
+
 const AppwriteHealth = () => {
     const navigate = useNavigate();
     const [healthData, setHealthData] = useState(null);
@@ -140,6 +311,13 @@ const AppwriteHealth = () => {
 
     const status = loading ? 'checking' : (healthData?.status || 'down');
     const statusStyle = STATUS_STYLES[status] || STATUS_STYLES.down;
+
+    const renderBody = () => {
+        if (loading) return <HealthSkeleton />;
+        if (healthData?.scopeRestricted) return <ScopeRestrictedContent scopeMessage={healthData.scopeMessage} />;
+        if (error) return <ErrorContent error={error} />;
+        return <HealthServicesContent healthData={healthData} />;
+    };
 
     return (
         <div className="min-h-screen bg-[var(--bg-secondary)] flex items-center justify-center p-4">
@@ -193,181 +371,8 @@ const AppwriteHealth = () => {
 
                     {/* Body */}
                     <div className="p-6 space-y-5">
-                        {loading ? (
-                            <HealthSkeleton />
-                        ) : healthData?.scopeRestricted ? (
-                            /* Scope restriction warning */
-                            <div className="space-y-5">
-                                {/* Warning banner */}
-                                <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'rgba(245, 158, 11, 0.3)' }}>
-                                    <div className="bg-gradient-to-r from-amber-500 to-yellow-600 px-5 py-3 flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
-                                            <i className="fa-solid fa-shield-halved text-white"></i>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-semibold text-white">Health API Scope Restricted</p>
-                                            <p className="text-xs text-white/80">Server is reachable but health data is limited</p>
-                                        </div>
-                                    </div>
-                                    <div className="px-5 py-4" style={{ backgroundColor: 'var(--bg-primary)' }}>
-                                        <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                                            {healthData.scopeMessage}
-                                        </p>
-                                        <div
-                                            className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg text-xs"
-                                            style={{
-                                                backgroundColor: 'rgba(245, 158, 11, 0.08)',
-                                                color: '#d97706',
-                                            }}
-                                        >
-                                            <i className="fa-solid fa-lightbulb"></i>
-                                            <span>
-                                                <strong>Suggestion:</strong> Go to Appwrite Console → Auth → Settings →
-                                                {' '}Allowed Scopes and add <code className="font-mono bg-amber-500/10 px-1 rounded">health.read</code>
-                                                {' '}for guest users, or create an API key with that scope.
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Fallback service status */}
-                                <div className="space-y-3">
-                                    <ServiceChip
-                                        name="Server (reachable)"
-                                        status="pass"
-                                        icon="fa-server"
-                                    />
-                                    <ServiceChip
-                                        name="Database"
-                                        status="fail"
-                                        icon="fa-database"
-                                    />
-                                    <ServiceChip
-                                        name="Cache"
-                                        status="fail"
-                                        icon="fa-gauge-high"
-                                    />
-                                    <ServiceChip
-                                        name="Server Time Sync"
-                                        status="fail"
-                                        icon="fa-clock"
-                                    />
-                                </div>
-                            </div>
-                        ) : error ? (
-                            /* Error state */
-                            <div className="text-center py-6">
-                                <div
-                                    className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                                    style={{
-                                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                                        color: '#ef4444',
-                                    }}
-                                >
-                                    <i className="fa-solid fa-bolt text-2xl"></i>
-                                </div>
-                                <p className="text-sm font-medium text-[var(--text-primary)] mb-1">
-                                    Connection Error
-                                </p>
-                                <p className="text-xs text-[var(--text-muted)] max-w-xs mx-auto">
-                                    {error}
-                                </p>
-                            </div>
-                        ) : (
-                            /* Services grid */
-                            <div className="space-y-3">
-                                {healthData?.server && (
-                                    <ServiceChip
-                                        name="Server"
-                                        status={healthData.status === 'up' ? 'pass' : 'fail'}
-                                        icon="fa-server"
-                                    />
-                                )}
-                                {healthData?.database && (
-                                    <ServiceChip
-                                        name="Database"
-                                        status={healthData.database.status}
-                                        detail={healthData.database.message || healthData.database.description || healthData.database.error}
-                                        icon="fa-database"
-                                    />
-                                )}
-                                {healthData?.cache && (
-                                    <ServiceChip
-                                        name="Cache"
-                                        status={healthData.cache.status}
-                                        detail={healthData.cache.message || healthData.cache.description || healthData.cache.error}
-                                        icon="fa-gauge-high"
-                                    />
-                                )}
-                                {healthData?.time && (
-                                    <ServiceChip
-                                        name="Server Time Sync"
-                                        status={healthData.time.remoteTime ? 'pass' : (healthData.time.status || 'fail')}
-                                        detail={healthData.time.message || healthData.time.description || healthData.time.error}
-                                        icon="fa-clock"
-                                    />
-                                )}
-
-                                {/* Time offset info */}
-                                {healthData?.time?.offset !== undefined && healthData.time.remoteTime && (
-                                    <div
-                                        className="flex items-center justify-between px-4 py-2.5 rounded-xl text-xs"
-                                        style={{
-                                            backgroundColor: 'var(--bg-tertiary)',
-                                            color: 'var(--text-muted)',
-                                        }}
-                                    >
-                                        <span>Time offset</span>
-                                        <span className="font-mono font-medium text-[var(--text-secondary)]">
-                                            {healthData.time.offset >= 0 ? '+' : ''}
-                                            {healthData.time.offset}ms
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Action buttons */}
-                        <div className="flex items-center gap-3 pt-1">
-                            <button
-                                onClick={() => runCheck(true)}
-                                disabled={refreshing}
-                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 disabled:opacity-50"
-                                style={{
-                                    backgroundColor: 'var(--light-theme-color)',
-                                    color: 'var(--theme-color)',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'var(--light-theme-color-hover)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'var(--light-theme-color)';
-                                }}
-                            >
-                                <i className={`fa-solid fa-rotate ${refreshing ? 'animate-spin' : ''}`}></i>
-                                {refreshing ? 'Refreshing...' : 'Refresh Status'}
-                            </button>
-                            <a
-                                href={conf.appwriteUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
-                                style={{
-                                    backgroundColor: 'var(--bg-tertiary)',
-                                    color: 'var(--text-secondary)',
-                                    border: '1px solid var(--border-color)',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'var(--dark-box-color)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
-                                }}
-                            >
-                                <i className="fa-solid fa-external-link"></i>
-                                Open Console
-                            </a>
-                        </div>
+                        {renderBody()}
+                        <ActionButtons refreshing={refreshing} onRefresh={() => runCheck(true)} />
                     </div>
                 </div>
 

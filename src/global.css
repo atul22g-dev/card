@@ -1,55 +1,94 @@
 :root {
-    --theme-color: rgb(244, 90, 87);
-    --theme-color-rgb: 244, 90, 87;
-    --light-theme-color: rgba(244, 90, 87, .12);
-    --light-theme-color-hover: rgba(244, 90, 87, .2);
-    --btn-disable-color: #b5b7b8;
-    --box-disable-color: #acb9be;
-    --box-color: #f9fafb;
-    --dark-box-color: #e2e3e3;
-    --white-color: #fff;
-    --black-color: #000;
-    --add-color: #2fd67a;
+    /* ─── Theme — Blue/Indigo ─── */
+    --theme-color: #4f46e5;
+    --theme-color-rgb: 79, 70, 229;
+    --light-theme-color: rgba(79, 70, 229, 0.08);
+    --light-theme-color-hover: rgba(79, 70, 229, 0.14);
+
+    /* ─── Surfaces — Cleaner hierarchy ─── */
     --bg-primary: #ffffff;
-    --bg-secondary: #f8f9fa;
-    --bg-tertiary: #f0f2f5;
-    --text-primary: #1a1a2e;
-    --text-secondary: #4a4a6a;
-    --text-muted: #8e8ea0;
-    --border-color: #e8e8ef;
-    --border-radius-sm: 8px;
-    --border-radius-md: 12px;
-    --border-radius-lg: 16px;
-    --border-radius-xl: 20px;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, .08), 0 1px 2px rgba(0, 0, 0, .06);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, .1), 0 2px 4px rgba(0, 0, 0, .06);
-    --shadow-lg: 0 10px 30px rgba(0, 0, 0, .12), 0 4px 8px rgba(0, 0, 0, .06);
-    --shadow-xl: 0 20px 50px rgba(0, 0, 0, .15), 0 8px 16px rgba(0, 0, 0, .08);
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+
+    /* ─── Text — Better contrast ratios ─── */
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+
+    /* ─── Borders — Subtle, refined ─── */
+    --border-color: #e2e8f0;
+
+    /* ─── Semantic ─── */
+    --btn-disable-color: #cbd5e1;
+    --box-disable-color: #b0bec5;
+    --box-color: #f8fafc;
+    --dark-box-color: #e2e8f0;
+    --white-color: #ffffff;
+    --black-color: #000000;
+    --add-color: #10b981;
+
+    /* ─── Radii — Consistent rounding ─── */
+    --border-radius-sm: 10px;
+    --border-radius-md: 14px;
+    --border-radius-lg: 18px;
+    --border-radius-xl: 24px;
+
+    /* ─── Shadows — Deeper, more realistic with layered depth ─── */
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.02);
+    --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(15, 23, 42, 0.02);
+    --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
+    --shadow-2xl: 0 25px 50px -12px rgba(15, 23, 42, 0.18), 0 0 80px rgba(15, 23, 42, 0.04);
+
+    /* ─── Depth shadows — elevated surfaces ─── */
+    --shadow-elevated: 0 2px 4px rgba(15, 23, 42, 0.04), 0 8px 16px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(15, 23, 42, 0.03);
+    --shadow-floating: 0 4px 8px rgba(15, 23, 42, 0.06), 0 16px 32px rgba(15, 23, 42, 0.1), 0 0 0 1px rgba(15, 23, 42, 0.04);
+    --shadow-glow: 0 0 20px rgba(var(--theme-color-rgb), 0.15), 0 0 60px rgba(var(--theme-color-rgb), 0.08);
+
+    /* ─── Typography ─── */
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --transition-fast: all .2s cubic-bezier(.4, 0, .2, 1);
-    --transition-base: all .3s cubic-bezier(.4, 0, .2, 1);
-    --transition-slow: all .5s cubic-bezier(.4, 0, .2, 1);
+
+    /* ─── Transitions ─── */
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* ─── Ambient colors ─── */
+    --ambient-primary: rgba(var(--theme-color-rgb), 0.04);
+    --ambient-hover: rgba(var(--theme-color-rgb), 0.08);
+    --ambient-active: rgba(var(--theme-color-rgb), 0.12);
 }
 
-/* Dark Mode Overrides */
+/* ─── Dark Mode ─── */
 .dark {
-    --bg-primary: #1a1b2e;
-    --bg-secondary: #0f1023;
-    --bg-tertiary: #252640;
-    --text-primary: #e8e8f0;
-    --text-secondary: #a0a0b8;
-    --text-muted: #6b6b80;
-    --border-color: #2a2b45;
-    --btn-disable-color: #4a4a5e;
-    --box-disable-color: #5a5a6e;
-    --box-color: #1e1f38;
-    --dark-box-color: #252640;
-    --white-color: #e8e8f0;
-    --black-color: #0f1023;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, .3), 0 1px 2px rgba(0, 0, 0, .2);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, .4), 0 2px 4px rgba(0, 0, 0, .2);
-    --shadow-lg: 0 10px 30px rgba(0, 0, 0, .5), 0 4px 8px rgba(0, 0, 0, .3);
-    --shadow-xl: 0 20px 50px rgba(0, 0, 0, .6), 0 8px 16px rgba(0, 0, 0, .4);
+    --theme-color: #818cf8;
+    --theme-color-rgb: 129, 140, 248;
+    --light-theme-color: rgba(129, 140, 248, 0.14);
+    --light-theme-color-hover: rgba(129, 140, 248, 0.22);
+    --bg-primary: #0f1629;
+    --bg-secondary: #080d1e;
+    --bg-tertiary: #1a2038;
+    --text-primary: #eef2ff;
+    --text-secondary: #a5b4fc;
+    --text-muted: #7c8db5;
+    --border-color: #232d4a;
+    --btn-disable-color: #3b4a6b;
+    --box-disable-color: #556380;
+    --box-color: #131a30;
+    --dark-box-color: #1e2744;
+    --white-color: #eef2ff;
+    --black-color: #080d1e;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.25);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.45), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 80px rgba(129, 140, 248, 0.08);
+    --shadow-elevated: 0 2px 4px rgba(0, 0, 0, 0.35), 0 8px 16px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(129, 140, 248, 0.06);
+    --shadow-floating: 0 4px 8px rgba(0, 0, 0, 0.4), 0 16px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(129, 140, 248, 0.08);
+    --shadow-glow: 0 0 30px rgba(129, 140, 248, 0.2), 0 0 80px rgba(129, 140, 248, 0.1);
+    --ambient-primary: rgba(129, 140, 248, 0.06);
+    --ambient-hover: rgba(129, 140, 248, 0.12);
+    --ambient-active: rgba(129, 140, 248, 0.18);
 }
 
 .dark body {
@@ -73,16 +112,15 @@
     background-color: var(--bg-secondary);
 }
 
-/* Dark mode scrollbar */
 .dark ::-webkit-scrollbar-thumb {
-    background: #3a3b55;
+    background: #1e293b;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-    background: #5a5b75;
+    background: #334155;
 }
 
-/* Tailwind css */
+/* ─── Tailwind ─── */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -94,6 +132,23 @@ body {
     background-color: var(--bg-secondary);
     color: var(--text-primary);
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    line-height: 1.6;
+}
+
+/* ─── Modern global polish ─── */
+::selection {
+    background: var(--theme-color);
+    color: white;
+}
+
+/* Smooth page transitions */
+#root {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 html {
@@ -107,21 +162,41 @@ html {
 
 @layer components {
 
-    /* Card Dashboard */
     .card-MainContainer {
-        @apply flex flex-row min-h-[calc(100vh-61px)];
+        /* Stack vertically on phones (mobile top bar above the card list/preview);
+           side-by-side from md up (fixed 240px sidebar + content). */
+        @apply flex flex-col md:flex-row;
+        min-height: calc(100vh - 56px);
+        min-height: calc(100dvh - 56px);
         background-color: var(--bg-secondary);
-        margin-top: 61px;
+        margin-top: 56px;
     }
 
     .card-sideContainer {
-        @apply bg-white h-[calc(100vh-56px)] w-[220px] border-r border-[var(--border-color)] shadow-sm;
+        @apply h-[calc(100vh-56px)] w-[240px] min-h-0;
         display: flex;
         flex-direction: column;
+        background-color: var(--bg-primary);
+        border-right: 1px solid var(--border-color);
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.06), 4px 0 24px rgba(0, 0, 0, 0.03);
+        position: relative;
+        z-index: 10;
+    }
+
+    .card-sideContainer::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 1px;
+        height: 100%;
+        background: linear-gradient(to bottom, transparent, var(--border-color), transparent);
+        pointer-events: none;
     }
 
     .card-sideContainer .header {
-        @apply flex items-center justify-between px-4 h-[60px] border-b border-[var(--border-color)];
+        @apply flex items-center justify-between px-4 h-[52px];
+        border-bottom: 1px solid var(--border-color);
     }
 
     .card-sideContainer ul {
@@ -129,31 +204,38 @@ html {
     }
 
     .card-sideContainer ul li {
-        @apply flex items-center px-4 h-[42px] text-sm text-[var(--text-secondary)] cursor-pointer bg-white hover:bg-[var(--bg-tertiary)] transition-all duration-200 border-l-[3px] border-transparent;
+        @apply flex items-center px-4 h-[42px] text-sm cursor-pointer transition-all duration-300 border-l-[3px] border-transparent rounded-r-lg;
+        color: var(--text-secondary);
+        background-color: transparent;
+        margin: 2px 8px;
+        border-radius: 0 8px 8px 0;
     }
 
     .card-sideContainer ul li:hover {
-        @apply text-[var(--text-primary)] border-l-[var(--theme-color)];
+        @apply border-l-[var(--theme-color)];
+        color: var(--text-primary);
+        background-color: var(--light-theme-color);
+        transform: translateX(2px);
     }
 
     .card-sideContainer ul li.active {
-        @apply border-l-[var(--theme-color)] font-medium;
+        @apply border-l-[var(--theme-color)] font-semibold;
         color: var(--theme-color);
         background-color: var(--light-theme-color);
+        box-shadow: 0 2px 12px rgba(var(--theme-color-rgb), 0.15), 0 0 0 1px rgba(var(--theme-color-rgb), 0.06);
     }
 
     .card-sideContainer ul li a {
         @apply w-full h-full flex items-center gap-2 overflow-hidden;
     }
 
-    /* card-view-con */
     .card-view-con {
         @apply flex-1 overflow-y-auto;
     }
 
     ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
+        width: 5px;
+        height: 5px;
     }
 
     ::-webkit-scrollbar-track {
@@ -161,12 +243,11 @@ html {
     }
 
     ::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 3px;
+        background: #cbd5e1;
+        border-radius: 99px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-        background: #a1a1a1;
+        background: #94a3b8;
     }
-
 }

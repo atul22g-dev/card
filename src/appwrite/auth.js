@@ -2,16 +2,17 @@ import { handleErrors, handleSuccess } from '../components/func/AllFunc';
 import conf from './config';
 import { Databases, Client, Account, ID, Query } from "appwrite";
 
-
+// Shared Appwrite Client — both AuthService and DBService use the same
+// instance so that a session created by AuthService.login() is
+// automatically available to DBService database calls.
+const client = new Client()
+    .setEndpoint(conf.appwriteUrl)
+    .setProject(conf.appwriteProjectId);
 
 export class DBService {
-    client = new Client();
     Databases;
     constructor() {
-        this.client
-            .setEndpoint(conf.appwriteUrl)
-            .setProject(conf.appwriteProjectId);
-        this.Databases = new Databases(this.client);
+        this.Databases = new Databases(client);
     }
 
     // Read the active theme color from the CSS variable
@@ -36,31 +37,40 @@ export class DBService {
                 Time: Time, 
                 UserID: user.$id 
             });
-            console.log("Data Add Successfully");
             window.location.href = conf.SiteUrl + '/dashboard';
         } catch (error) {
-            console.log("Data Not Add " + error);
+
             handleErrors({ message: error.message })
         }
     }
 
     async fetchdata() {
-        const promise = await this.Databases.listDocuments(conf.appwriteDatabaseId, conf.appwriteCollectionId);
+        try {
+            const promise = await this.Databases.listDocuments(conf.appwriteDatabaseId, conf.appwriteCollectionId);
 
-        if (promise.total === 0) {
+            if (promise.total === 0) {
+                return null;
+            } else {
+                return promise.documents;
+            }
+        } catch (error) {
+            console.error('Failed to fetch data:', error.message);
             return null;
-        } else {
-            return promise.documents;
         }
     }
     async fetchOnedata(parameter) {
-        let para = parameter.replace("?", "");
-        const promise = await this.Databases.listDocuments(conf.appwriteDatabaseId, conf.appwriteCollectionId, [Query.equal('$id', [para])])
+        try {
+            let para = parameter.replace("?", "");
+            const promise = await this.Databases.listDocuments(conf.appwriteDatabaseId, conf.appwriteCollectionId, [Query.equal('$id', [para])])
 
-        if (promise.total === 0) {
+            if (promise.total === 0) {
+                return null;
+            } else {
+                return promise.documents;
+            }
+        } catch (error) {
+            console.error('Failed to fetch data:', error.message);
             return null;
-        } else {
-            return promise.documents;
         }
     }
 
@@ -92,15 +102,10 @@ export class DBService {
     }
 }
 export class AuthService {
-    client = new Client();
     account;
 
     constructor() {
-        this.client
-            .setEndpoint(conf.appwriteUrl)
-            .setProject(conf.appwriteProjectId);
-        this.account = new Account(this.client);
-
+        this.account = new Account(client);
     }
 
     async createAccount({ email, password, name }) {
@@ -115,11 +120,11 @@ export class AuthService {
             handleErrors({ message: error.message });
         }
     }
-    createAccountAuth(name) {
+    async createAccountAuth(name) {
         try {
-            this.account.createOAuth2Session(name, conf.SiteUrl + '/dashboard', conf.SiteUrl);
+            await this.account.createOAuth2Session(name, conf.SiteUrl + '/dashboard', conf.SiteUrl);
         } catch (error) {
-            handleErrors({ message: error.messsage });
+            handleErrors({ message: error.message });
         }
     }
 

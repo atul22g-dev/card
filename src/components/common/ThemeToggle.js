@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 const ThemeToggle = () => {
   const [dark, setDark] = useState(() => {
@@ -15,12 +15,10 @@ const ThemeToggle = () => {
       root.classList.remove('dark');
     }
     localStorage.setItem('theme', dark ? 'dark' : 'light');
-  }, [dark]);
-
-  return (
+  }, [dark]);    return (
     <button
       onClick={() => setDark(prev => !prev)}
-      className="relative w-9 h-9 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200"
+      className="relative w-9 h-9 rounded-xl flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-all duration-200"
       title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
       aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
