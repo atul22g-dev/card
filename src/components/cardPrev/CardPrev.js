@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import CardData from './content/CardData'
 import { useDispatch, useSelector } from 'react-redux';
 import { storeSingleData } from '../../data/slices/databaseSlice';
@@ -12,7 +12,6 @@ const CardPrev = () => {
     const navigate = useNavigate()
     const location = useLocation();
     const dispatch = useDispatch();
-    const lastFetchedId = useRef(null);
     const [loading, setLoading] = useState(true);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleting, setDeleting] = useState(false);
@@ -32,21 +31,19 @@ const CardPrev = () => {
 
 
     useEffect(() => {
-        const headers = location.search;
-        const currentId = headers.replace('?', '');
+        const currentId = location.search.replace('?', '');
         if (!currentId) return;
-        if (lastFetchedId.current === currentId) return;
-        lastFetchedId.current = currentId;
 
-        // AbortController cancels stale runs: when the effect re-runs (a
-        // different card selected) or the component unmounts, the cleanup
-        // aborts and the in-flight .then/.catch/.finally callbacks bail
-        // before touching state.
-        const controller = new AbortController();
+        // Track the latest run so a stale fetch (e.g. React StrictMode's
+        // simulated unmount/remount in dev) can't write state for an old
+        // card. Note: StrictMode mounts effects twice, so there must be no
+        // "already fetched this id" guard — the second mount refetches and
+        // only the live run clears loading.
+        let cancelled = false;
         setLoading(true);
-        dbService.fetchOnedata(headers)
+        dbService.fetchOnedata(currentId)
             .then((data) => {
-                if (controller.signal.aborted) return;
+                if (cancelled) return;
                 dispatch(storeSingleData(data));
                 if (data && data[0] && data[0].Data) {
                     try {
@@ -58,17 +55,16 @@ const CardPrev = () => {
                 }
             })
             .catch((error) => {
-                if (controller.signal.aborted) return;
+                if (cancelled) return;
                 console.error('Failed to load card:', error);
             })
             .finally(() => {
-                // Clear loading on both success and failure, but only for the
-                // current run — a stale fetch must not hide the newer card's
-                // loading skeleton.
-                if (!controller.signal.aborted) setLoading(false);
+                // Only the live run may clear loading; a cancelled run must
+                // not hide the fresh run's skeleton.
+                if (!cancelled) setLoading(false);
             });
-        return () => controller.abort();
-    }, [location, dispatch])
+        return () => { cancelled = true; };
+    }, [location.search, dispatch])
 
     if (loading) {
         return (

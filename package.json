@@ -1,6 +1,7 @@
 {
   "name": "card",
   "version": "0.1.0",
+  "proxy": "http://localhost:4000",
   "dependencies": {
     "@material-tailwind/react": "^2.1.9",
     "@reduxjs/toolkit": "^2.1.0",
@@ -18,10 +19,12 @@
     "react-toastify": "^10.0.4"
   },
   "scripts": {
+    "dev": "concurrently -k -n api,web -c blue,green \"node server.js\" \"react-scripts start\"",
     "start": "react-scripts start",
-    "start-server": "nodemon server.js",
+    "start-server": "node server.js",
     "build": "react-scripts build",
     "prod": "npm run build && node server.js",
+    "icons": "node scripts/generate-favicons.js",
     "doctor": "npx react-doctor@latest"
   },
   "eslintConfig": {
@@ -45,5 +48,8 @@
   "overrides": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
   }
 }

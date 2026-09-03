@@ -110,6 +110,29 @@ function isScopeError(result) {
 }
 
 /**
+ * Appwrite 1.5+ health sub-checks (db/cache) return an aggregated
+ * { total, statuses: [...] } object with NO top-level `status`, while older
+ * versions return a plain { status }. Treat the check as passing only when
+ * every reported sub-check passes.
+ */
+function isHealthPass(data) {
+    if (!data) return false;
+    if (typeof data.status === 'string') return data.status === 'pass';
+    // Newer Appwrite returns /health/time as { remoteTime, localTime, diff } with no status
+    if (data.remoteTime) return true;
+    if (Array.isArray(data.statuses)) {
+        return (
+            data.statuses.length > 0 &&
+            data.statuses.every((s) => {
+                const st = typeof s === 'string' ? s : s && s.status;
+                return st === 'pass';
+            })
+        );
+    }
+    return false;
+}
+
+/**
  * Build an info message when the health scope is restricted.
  */
 function scopeRestrictionMessage(scopes) {
@@ -122,6 +145,24 @@ function scopeRestrictionMessage(scopes) {
     );
 }
 
+// ─── Shared status defaults ────────────────────────────────────────────────────
+
+/**
+ * Fallback shape used when no status data could be gathered.
+ */
+export const EMPTY_STATUS_DATA = {
+    database: 'disconnected',
+    db_Name: 'N/A',
+    ping: 'error',
+    uptime: 0,
+    uptime_hours: '0.00',
+    collections: 0,
+    documents: 0,
+    indexes: 0,
+    data_size: '0.00 MB',
+    storage_size: '0.00 MB',
+};
+
 // ─── Legacy HealthService (used by /health page) ───────────────────────────────
 
 /**
@@ -131,6 +172,40 @@ function scopeRestrictionMessage(scopes) {
  */
 export class HealthService {
     async check() {
+        // Prefer the server-side proxy (real data via the API key). It is present
+        // whenever a backend (server.js / api/index.js) is running. Fall back to
+        // direct guest checks only when there is no backend (plain `npm start`).
+        const serverResult = await this.checkViaServer();
+        if (serverResult) return serverResult;
+        return this.checkDirect();
+    }
+
+    /**
+     * Ask the backend's /api/health for a report gathered with the API key.
+     * Returns null when no backend is reachable or the response is invalid.
+     */
+    async checkViaServer() {
+        try {
+            const res = await fetch('/api/health', { headers: { Accept: 'application/json' } });
+            if (!res.ok) return null;
+            const data = await res.json().catch(() => null);
+            if (!data || typeof data.status !== 'string') return null;
+            return {
+                status: data.status,
+                server: data.server || { status: 'fail' },
+                database: data.database || { status: 'fail' },
+                cache: data.cache || { status: 'fail' },
+                time: data.time || { status: 'fail' },
+                error: data.error || null,
+                scopeRestricted: !!data.scopeRestricted,
+                scopeMessage: data.scopeMessage || null,
+            };
+        } catch {
+            return null;
+        }
+    }
+
+    async checkDirect() {
         const result = {
             status: 'unknown',
             server: null,
@@ -183,7 +258,8 @@ export class HealthService {
         // --- Database health with full response ---
         const dbHealth = await fetchHealth('/health/db');
         if (dbHealth.ok && dbHealth.data) {
-            result.database = dbHealth.data;
+            // Normalize older / 1.5+ shapes to a page-friendly top-level status.
+            result.database = { ...dbHealth.data, status: isHealthPass(dbHealth.data) ? 'pass' : 'fail' };
         } else {
             result.database = {
                 status: 'fail',
@@ -194,7 +270,7 @@ export class HealthService {
         // --- Cache health with full response ---
         const cacheHealth = await fetchHealth('/health/cache');
         if (cacheHealth.ok && cacheHealth.data) {
-            result.cache = cacheHealth.data;
+            result.cache = { ...cacheHealth.data, status: isHealthPass(cacheHealth.data) ? 'pass' : 'fail' };
         } else {
             result.cache = {
                 status: 'fail',
@@ -224,22 +300,35 @@ export class HealthService {
  */
 export class StatusService {
     async getStatus() {
+        // Prefer the server-side /api/status endpoint (real data via the API key).
+        // Fall back to direct guest checks only when no backend is running.
+        const serverStatus = await this.getStatusViaServer();
+        if (serverStatus) return serverStatus;
+        return this.getStatusDirect();
+    }
+
+    /**
+     * Ask the backend's /api/status for the same report the endpoint returns.
+     * Returns null when no backend is reachable or the response is invalid.
+     */
+    async getStatusViaServer() {
+        try {
+            const res = await fetch('/api/status', { headers: { Accept: 'application/json' } });
+            if (!res.ok) return null;
+            const data = await res.json().catch(() => null);
+            if (!data || typeof data.status !== 'string' || !data.data) return null;
+            return data;
+        } catch {
+            return null;
+        }
+    }
+
+    async getStatusDirect() {
         // Default response
         const response = {
             status: 'error',
             message: 'Unable to reach Appwrite server',
-            data: {
-                database: 'disconnected',
-                db_Name: conf.appwriteDatabaseId || 'N/A',
-                ping: 'error',
-                uptime: 0,
-                uptime_hours: '0.00',
-                collections: 0,
-                documents: 0,
-                indexes: 0,
-                data_size: '0.00 MB',
-                storage_size: '0.00 MB',
-            },
+            data: { ...EMPTY_STATUS_DATA, db_Name: conf.appwriteDatabaseId || 'N/A' },
         };
 
         // --- Server health / ping ---
@@ -274,7 +363,7 @@ export class StatusService {
         // --- Database health ---
         const dbHealth = await fetchHealth('/health/db');
         if (dbHealth.ok && dbHealth.data) {
-            response.data.database = dbHealth.data.status === 'pass' ? 'connected' : 'degraded';
+            response.data.database = isHealthPass(dbHealth.data) ? 'connected' : 'degraded';
         }
 
         // --- Server time / uptime ---
